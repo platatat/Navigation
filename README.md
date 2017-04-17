@@ -1,2 +1,2 @@
 # Navigation
-Repo for the nav code
+Repo for the nav code- .gitignore only has python
