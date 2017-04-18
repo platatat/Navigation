@@ -31,8 +31,8 @@ def path_parse(data):
 def listener():
     rospy.init_node('sim', anonymous=True)
     rospy.Subscriber("bike_state", Float32MultiArray, update_graph)
-    #global paths
-    #paths = rospy.Subscriber("paths", Int32MultiArray, path_parse)
+    global paths
+    paths = rospy.Subscriber("paths", Int32MultiArray, path_parse)
     rate = rospy.Rate(100)
     rospy.loginfo(rospy.is_shutdown())
     while not rospy.is_shutdown():
@@ -43,9 +43,9 @@ def listener():
 if __name__ == '__main__':
     new_bike = bikeState.Bike(0, -10, 0.1, np.pi/3, 0, 0, 3.57)
     waypoints = [(0.1, 0.1), (30.1, 0.1), (31.1, 0.1)]
-    new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
+    map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
     plt.ion() # enables interactive plotting
-    paths = new_map_model.paths
+    paths = map_model.paths
     fig = plt.figure()
     fig.set_dpi(100) #dots per inch
     ax = plt.axes(xlim=(0, 40), ylim=(-20, 20)) 
