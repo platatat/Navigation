@@ -93,7 +93,7 @@ def parse_json():
 	return points
 
 
-parse_json()
+# parse_json()
 
 #Gets latitude of first point
 # print legs[0]["points"][0]['lat']

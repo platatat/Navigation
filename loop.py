@@ -5,6 +5,7 @@ import bikeState
 import bikeSim
 from constants import *
 import geometry
+import requestHandler
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -58,7 +59,7 @@ def main_loop(nav, bike):
 if __name__ == '__main__':
 	
 	new_bike = bikeState.Bike(-5, -5, 0.1, 0, 0, 0, 3.57)
-	waypoints = [(0.1, 0.1), (30.1, 0.1), (31.1, 0.1)]
+	waypoints = requestHandler.parse_json()
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	# print new_nav.direction_to_turn()
