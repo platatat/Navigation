@@ -40,9 +40,7 @@ def main_loop(nav, bike):
 
 		# print steerD
 		# if new state has new target path then recalculate delta
-		new_state = bikeSim.new_state(bike, steerD)
-		bike = new_state
-		nav.map_model.bike = bike
+		bike.update(bikeSim.new_state(bike, steerD))
 		# if k == 20:
 		# 	print "HELLOOOO", nav.calc_overshoot()
 			# print "HELLOOOO", nav.calc_overshoot()
@@ -58,7 +56,7 @@ def main_loop(nav, bike):
 
 if __name__ == '__main__':
 	
-	new_bike = bikeState.Bike(-5, -5, 0.1, 0, 0, 0, 3.57)
+	new_bike = bikeState.Bike(-1, -1, 0.1, 0, 0, 0, 3.57)
 	waypoints = requestHandler.parse_json()
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)

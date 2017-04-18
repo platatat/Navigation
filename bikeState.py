@@ -24,6 +24,16 @@ class Bike(object):
 		b = np.array([math.cos(self.psi), math.sin(self.psi)])
 		return b/np.linalg.norm(b)
 
+	def update(self, bike):
+		self.xB = bike.xB
+		self.yB = bike.yB
+		self.phi = bike.phi
+		self.psi = bike.psi
+		self.delta = bike.delta
+		self.w_r = bike.w_r
+		self.v = bike.v
+		self.turning_r = bike.turning_r
+
 
 	def rhs(self, steerD):
 		""" Equivalent to rhs in Matlab. Modifies the state object to turn it into the next state """
