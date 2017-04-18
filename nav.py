@@ -173,7 +173,9 @@ class Nav(object):
 	def controller_direction_to_turn(self):
 		""" pd controller """
 		path = self.map_model.paths[self.find_closest_path()]
-		angle_from_path = self.map_model.bike.psi - geometry.line_angle(path) # from -pi to pi
+		print"TARGET PATH IS", self.find_closest_path()
+		angle_from_path = self.map_model.bike.psi - geometry.angle_between_two_lines(path, ((0,0),(1,0))) # from -pi to pi
+		print "ANGLLLLE", angle_from_path
 
 		# angle_from_path = geometry.angle_between_two_lines(self.map_model.bike.vector, geometry.unit_vector(path[0], path[1]))
 		# path_perp = 

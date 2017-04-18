@@ -68,12 +68,6 @@ def distance_from_path(point, target_path):
 	dist = np.sum(v_perp*r)
 	return dist
 
-def line_angle(line):
-	""" Returns: angle of given path in global frame (radsss) """
-	point1 = line[0]
-	point2 = line[1]
-	return np.arcsin((point2[1]-point1[1])/(point2[0]-point1[0]))
-
 def line_slope(line):
 	""" Returns: slope of [line] """
 	return ((line[1][1]-line[0][1])/(line[1][0]-line[0][0]))
