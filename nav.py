@@ -174,7 +174,15 @@ class Nav(object):
 		""" pd controller """
 		path = self.map_model.paths[self.find_closest_path()]
 		print"TARGET PATH IS", self.find_closest_path()
-		angle_from_path = self.map_model.bike.psi - geometry.angle_between_two_lines(path, ((0,0),(1,0))) # from -pi to pi
+
+		path_vector = geometry.unit_vector(path[0], path[1])
+		bike_vector = self.map_model.bike.vector
+		angle_from_path = geometry.angle_between_vectors(bike_vector, path_vector)
+		path_perp = np.array([-path_vector[1], path_vector[0]])
+		dot = geometry.dot_product(path_perp, bike_vector)
+		angle_from_path = angle_from_path * np.sign(dot) # from -pi to pi
+
+		# angle_from_path = self.map_model.bike.psi - geometry.angle_between_two_lines(path, ((0,0),(1,0))) # from -pi to pi
 		print "ANGLLLLE", angle_from_path
 
 		# angle_from_path = geometry.angle_between_two_lines(self.map_model.bike.vector, geometry.unit_vector(path[0], path[1]))

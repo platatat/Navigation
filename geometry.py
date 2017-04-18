@@ -72,12 +72,18 @@ def line_slope(line):
 	""" Returns: slope of [line] """
 	return ((line[1][1]-line[0][1])/(line[1][0]-line[0][0]))
 
-def angle_between_two_lines(line1, line2):
-	line1 = unit_vector(line1[0], line1[1])
-	line2 = unit_vector(line2[0], line2[1])
-	dot = line1[0]*line2[0] + line1[1]*line2[1]
-	abs1 = math.sqrt(line1[0]**2 + line1[1]**2)
-	abs2 = math.sqrt(line2[0]**2 + line2[1]**2)
+def angle_between_vectors(v1, v2):
+	dot = v1[0]*v2[0] + v1[1]*v2[1]
+	abs1 = math.sqrt(v1[0]**2 + v1[1]**2)
+	abs2 = math.sqrt(v2[0]**2 + v2[1]**2)
 	return math.acos(dot/(abs1*abs2))
+
+def angle_between_two_lines(line1, line2):
+	v1 = unit_vector(line1[0], line1[1])
+	v2 = unit_vector(line2[0], line2[1])
+	return angle_between_vectors(v1, v2)
+
+def dot_product(v1, v2):
+	return v1[0]*v2[0]+v1[1]*v2[1]
 
 
