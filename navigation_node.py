@@ -34,10 +34,11 @@ def talker():
     pub = rospy.Publisher('dir_to_turn', Int32, queue_size=10)
     rospy.init_node('navigation', anonymous=True)
     rospy.Subscriber("bike_state", Float32MultiArray, update_bike_state)
-    #rospy.Subscriber("paths", Int32MultiArray, path_parse)
+    rospy.Subscriber("paths", Int32MultiArray, path_parse)
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         new_map = new_nav.map_model
+	rospy.loginfo(new_nav.direction_to_turn())
         pub.publish(new_nav.direction_to_turn())
         rate.sleep()
 
@@ -45,8 +46,8 @@ if __name__ == '__main__':
     try:
         new_bike = bikeState.Bike(0, -10, 0.1, np.pi/3, 0, 0, 3.57)
         waypoints = [(0.1, 0.1), (30.1, 0.1), (31.1, 0.1)]
-        new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
-        new_nav = nav.Nav(new_map_model)
+        new_map = mapModel.Map_Model(new_bike, waypoints, [], [])
+        new_nav = nav.Nav(new_map)
         talker()
     except rospy.ROSInterruptException:
         rospy.loginfo('here')

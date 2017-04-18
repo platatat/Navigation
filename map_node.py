@@ -5,6 +5,9 @@ from std_msgs.msg import Int32MultiArray
 import numpy as np
 from std_msgs.msg import MultiArrayLayout
 from std_msgs.msg import MultiArrayDimension
+import requestHandler
+import bikeState
+import mapModel
 
 def setup_dimension():
     dim = []
@@ -26,8 +29,7 @@ def map_server():
         rate.sleep()
 
 if __name__ == "__main__":
-    new_bike = nav.Bike((1,8), np.radians(0), .02)
-    map_model = nav.Map_Model(new_bike, [[],[]], [])
-    map_model.add_path([0,9],[10,9])
-    map_model.add_point([9,20])
+    new_bike = bikeState.Bike(-5, -5, 0.1, 0, 0, 0, 3.57)
+    waypoints = requestHandler.parse_json()
+    map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
     map_server()

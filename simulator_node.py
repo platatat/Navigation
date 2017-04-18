@@ -28,11 +28,13 @@ def listener():
     pub = rospy.Publisher('bike_state', Float32MultiArray, queue_size=10)
     rospy.init_node('simulator', anonymous=True)
     rospy.Subscriber("dir_to_turn", Int32, update_graph)
+    rospy.Subscriber("paths", Int32MultiArray, path_parse)
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         dim = [MultiArrayDimension('data', 8, 8)]
         layout = MultiArrayLayout(dim, 0)
         l = [new_bike.xB, new_bike.yB, new_bike.phi, new_bike.psi, new_bike.delta, new_bike.w_r, new_bike.v, new_bike.turning_r]
+        rospy.loginfo(l)
         pub.publish(layout, l)
         rate.sleep()
     
