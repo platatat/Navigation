@@ -22,20 +22,25 @@ def path_parse(data):
 
 def update_bike_state(data):
     d = data.data
-    new_bike.xB = d[0]
-    new_bike.yB = d[1]
-    new_bike.phi = d[2]
-    new_bike.psi = d[3]
-    new_bike.delta = d[4]
-    new_bike.w_r = d[5]
-    new_bike.v = d[6]
-    new_bike.turning_r = d[7]
+    #new_bike.xB = d[0]
+    #new_bike.yB = d[1]
+    new_bike.phi = d[5]
+    new_bike.delta = d[2]
+    new_bike.w_r = d[4]
+    # new_bike.v = d[] #gps or 6
+    # new_bike.turning_r = d[7] LOOKEDUP
 
 
 def update_bike_xy(data):
     lat = data.data[0]
     lon = data.data[1]
+    psi = data.data[7]
+    velocity = data.data[8]
+
     xy_point = requestHandler.math_convert(lat, lon)
+
+    new_bike.psi = psi
+    new_bike.v = velocity
     new_bike.xB = xy_point[0]
     new_bike.yB = xy_point[1]
 
