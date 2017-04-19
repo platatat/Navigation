@@ -31,7 +31,7 @@ def update_bike_state(data):
     new_bike.turning_r = d[7]
 
 def talker():
-    pub = rospy.Publisher('dir_to_turn', Int32, queue_size=10)
+    pub = rospy.Publisher('nav_instr', Int32, queue_size=10)
     rospy.init_node('navigation', anonymous=True)
     # Subscribe to topic "bike_state" to get data and then call update_bike_state with data
     rospy.Subscriber("bike_state", Float32MultiArray, update_bike_state) 
@@ -39,7 +39,7 @@ def talker():
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         new_map = new_nav.map_model
-	rospy.loginfo(new_nav.direction_to_turn())
+	    rospy.loginfo(new_nav.direction_to_turn())
         pub.publish(new_nav.direction_to_turn())
         rate.sleep()
 

@@ -18,7 +18,7 @@ def setup_dimension():
     return dim
 
 def map_server():
-    pub = rospy.Publisher('paths', Int32MultiArray, queue_size=10)
+    pub = rospy.Publisher('paths', Int32MultiArray, queue_size=10) 
     rospy.init_node('map', anonymous=True) # Initialize ROS node 'map'
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
