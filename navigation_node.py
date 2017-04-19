@@ -9,6 +9,7 @@ from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Float32MultiArray
 import bikeState
 import mapModel
+import requestHandler
 
 
 def callback(data):
@@ -30,11 +31,21 @@ def update_bike_state(data):
     new_bike.v = d[6]
     new_bike.turning_r = d[7]
 
+
+def update_bike_xy(data):
+    lat = data.data[0]
+    lon = data.data[1]
+    xy_point = requestHandler.math_convert(lat, lon)
+    new_bike.xB = xy_point[0]
+    new_bike.yB = xy_point[1]
+
+
 def talker():
     pub = rospy.Publisher('nav_instr', Int32, queue_size=10)
     rospy.init_node('navigation', anonymous=True)
     # Subscribe to topic "bike_state" to get data and then call update_bike_state with data
     rospy.Subscriber("bike_state", Float32MultiArray, update_bike_state) 
+    rospy.Subscriber("gps_state", Float32MultiArray, update_bike_xy)
     rospy.Subscriber("paths", Int32MultiArray, path_parse) 
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
