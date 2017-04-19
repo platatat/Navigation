@@ -11,7 +11,7 @@ import mapModel
 
 def setup_dimension():
     dim = []
-    s = np.array(map_model.paths).shape[0]
+    s = np.array(map_model.paths).shape[0] # .shape gives tuple of array dimensions
     dim.append(MultiArrayDimension('paths', len(map_model.paths), s))
     dim.append(MultiArrayDimension('path', 2, 4))
     dim.append(MultiArrayDimension('point', 2, 2))
@@ -19,7 +19,7 @@ def setup_dimension():
 
 def map_server():
     pub = rospy.Publisher('paths', Int32MultiArray, queue_size=10)
-    rospy.init_node('map', anonymous=True)
+    rospy.init_node('map', anonymous=True) # Initialize ROS node 'map'
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         dim = setup_dimension()
