@@ -26,7 +26,7 @@ class Nav(object):
 		delta = np.abs(self.displacement_to_turn())
 		# delta = 7.81166015145 # undershoot of -0.808198581543 (setting delta equal to result of overshoot2)
 		# delta = delta + 6.11776258705 # VALUE I calculated using my overshoot calculation functions (gives undershoot of -0.808198581543)
-		delta = delta*8
+		delta = delta
 
 		if delta<distance:
 			return self.turn_perp()
@@ -164,15 +164,28 @@ class Nav(object):
 
 	def close_enough(self):
 		""" Returns: true if bike is close enough to the target path line so that 
-		pd controller takes over, false otherwise """
+		p-controller takes over, false otherwise 
+
+		Professor Ruina comment: This should also take into account the angle b/w the bike
+		and the path """
+		path = self.map_model.paths[self.find_closest_path()]
+		path_vector = geometry.unit_vector(path[0], path[1])
+		bike_vector = self.map_model.bike.vector
+		angle_from_path = geometry.angle_between_vectors(bike_vector, path_vector)
+
 		distance = geometry.distance_from_path((self.map_model.bike.xB, self.map_model.bike.yB), self.map_model.paths[self.target_path])
-		print "distance is ", distance
-		return ( np.abs(distance) < 3 )
+		# print "angle from line is ", angle_from_path
+		# print "distance is ", distance
+		# return ( ( np.abs(distance) < 3 ) and ( np.abs(angle_from_path) < math.pi/2.0) )
+		return True
 
 
 	def controller_direction_to_turn(self):
 		""" pd controller """
 		path = self.map_model.paths[self.find_closest_path()]
+		self.target_path = self.find_closest_path()#QUICK 
+
+
 		print"TARGET PATH IS", self.find_closest_path()
 
 		path_vector = geometry.unit_vector(path[0], path[1])
@@ -183,23 +196,43 @@ class Nav(object):
 		angle_from_path = angle_from_path * np.sign(dot) # from -pi to pi
 
 		# angle_from_path = self.map_model.bike.psi - geometry.angle_between_two_lines(path, ((0,0),(1,0))) # from -pi to pi
-		print "ANGLLLLE", angle_from_path
+		# print "ANGLLLLE", angle_from_path
 
 		# angle_from_path = geometry.angle_between_two_lines(self.map_model.bike.vector, geometry.unit_vector(path[0], path[1]))
 		# path_perp = 
 		
 		k1 = .35 #gain for distance correction
 		k2 = 1 #gain for angle correction
-		d = geometry.distance_from_path((self.map_model.bike.xB, self.map_model.bike.yB), self.map_model.paths[self.target_path]) #distance
-		
+
+		nearest_p = geometry.nearest_point_on_path(self.map_model.paths[self.target_path], (self.map_model.bike.xB, self.map_model.bike.yB))
+		perp_v = geometry.threeD_unit_vector(nearest_p, (self.map_model.bike.xB, self.map_model.bike.yB))
+
+		# find which way the cross product, perp_v vs path_v is pointing to determine the sign 
+		path_v = geometry.threeD_unit_vector(self.map_model.paths[self.target_path][0], self.map_model.paths[self.target_path][1])
+
+		print "PERP+V", perp_v
+		print "PATH_V", path_v
+		cross = np.cross(perp_v, path_v)
+		print "CROSS", cross[2]
+
+		sign = np.sign(cross[2])
+
+		dist = geometry.distance((self.map_model.bike.xB, self.map_model.bike.yB), nearest_p)
+		# d = geometry.distance_from_path((self.map_model.bike.xB, self.map_model.bike.yB), self.map_model.paths[self.target_path]) #distance #IT HAS A BUG
+		# should be signed perpendicular distance from target path 
+
+		d = dist * sign * (-1)
+		print "ACTUAL TARGET", self.map_model.paths[self.target_path]
+		print "signed angle from path", angle_from_path
+		print "signed distance from path", d
 		# d = np.abs(d)
 		steerD = k1*d + k2*angle_from_path
 		print "steeeerD", steerD
 		if (steerD > MAX_STEER):
-			print "one"
+			# print "one"
 			steerD = MAX_STEER
 		elif (steerD < -MAX_STEER):
-			print "two"
+			# print "two"
 			steerD = -MAX_STEER
 		#else don't do anything
 		print "steerD is", steerD

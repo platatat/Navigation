@@ -17,12 +17,12 @@ def main_loop(nav, bike):
 	to get the updated state and plots the new state """
 	k = 0 
 
-	while (k < 1000):
+	while (k < 2000):
 
 		#plotting
 		plt.scatter(bike.xB, bike.yB)
 		plt.show()
-		plt.pause(0.00001)
+		plt.pause(0.0000000001)
 
 		# Steer vs Time
 		# plt.scatter((k+1)*TIMESTEP, bike.delta)
@@ -57,9 +57,11 @@ def main_loop(nav, bike):
 if __name__ == '__main__':
 	
 	new_bike = bikeState.Bike(-1, -1, 0.1, 0, 0, 0, 3.57)
-	waypoints = requestHandler.parse_json()
+	# waypoints = requestHandler.parse_json()
+	waypoints = [(0,0), (20, 5), (40, 5)]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
+	print "PATHS", new_nav.map_model.paths
 	# print new_nav.direction_to_turn()
 	# print new_bike.rhs(new_nav.direction_to_turn())
 	# PLOTTING
