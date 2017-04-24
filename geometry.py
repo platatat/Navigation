@@ -89,4 +89,8 @@ def angle_between_two_lines(line1, line2):
 def dot_product(v1, v2):
 	return v1[0]*v2[0]+v1[1]*v2[1]
 
+def threeD_unit_vector(p1, p2):
+	""" Returns: the unit vector given points [p1] and [p2] """
+	v =  np.array([p2[0]-p1[0], p2[1]-p1[1], 0])
+	return v/np.linalg.norm(v)
 
