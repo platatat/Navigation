@@ -31,6 +31,6 @@ def map_server():
 
 if __name__ == "__main__":
     new_bike = bikeState.Bike(-5, -5, 0.1, 0, 0, 0, 3.57)
-    waypoints = requestHandler.parse_json()
+    waypoints = requestHandler.parse_json(presets = True)
     map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
     map_server()
