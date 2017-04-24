@@ -64,33 +64,38 @@ def bearing_from_origin(origin, latitude, longitude):
 
 
 
-def parse_json():
+def parse_json(presets=False):
 	#Gets url object and makes it into string
 	# url = urllib.urlopen("http://localhost:8000/secretdatatransfer")
-	url = urllib.urlopen("https://autonomous-bicyc-1486924645777.appspot.com/getwaypoints") #NEW
-	string = url.read()
 
-	#Make into dictionary
-	dictionary = json.loads(string)
-	legs = dictionary["legs"] #points list
 
-	points = []
-	points2 = []
+	if (not presets):
+		url = urllib.urlopen("https://autonomous-bicyc-1486924645777.appspot.com/getwaypoints") #NEW
+		string = url.read()
 
-	#Accumulates list of point tuples
-	for i in legs:
-		for j in (i["points"]):
-			latitude = j['lat']
-			longitude = j['lng']
-			xy = math_convert(latitude, longitude)
-			xy2 = convert2(latitude, longitude)
-			points.append(xy)
-			points2.append(xy2)
+		#Make into dictionary
+		dictionary = json.loads(string)
+		legs = dictionary["legs"] #points list
 
-	# Scaling Issue of points. Need to ZOOM IN because discrepancies are very small
-	print points
-	# print points2
-	return points
+		points = []
+		points2 = []
+
+		#Accumulates list of point tuples
+		for i in legs:
+			for j in (i["points"]):
+				latitude = j['lat']
+				longitude = j['lng']
+				xy = math_convert(latitude, longitude)
+				xy2 = convert2(latitude, longitude)
+				points.append(xy)
+				points2.append(xy2)
+
+		# Scaling Issue of points. Need to ZOOM IN because discrepancies are very small
+		print points
+		# print points2
+		return points
+	else:
+		return [(0,0), (20, 5), (40, 5)]
 
 
 # parse_json()
