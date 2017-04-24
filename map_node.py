@@ -22,6 +22,7 @@ def map_server():
     rospy.init_node('map', anonymous=True) # Initialize ROS node 'map'
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
+        rospy.loginfo(map_model.paths)
         dim = setup_dimension()
         layout = MultiArrayLayout(dim, 0)
         rospy.loginfo(map_model.paths)

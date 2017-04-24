@@ -31,7 +31,10 @@ def nearest_point_on_path(path, point):
 	point2 = path[1]
 	dist = distance(point1, point2)
 	d2 = dist2(point1, point2)
-	t = ((point[0] - point1[0])*(point2[0]-point1[0]) + (point[1] - point1[1]) * (point2[1] - point1[1]))/d2
+        if (d2!=0):
+	    t = ((point[0] - point1[0])*(point2[0]-point1[0]) + (point[1] - point1[1]) * (point2[1] - point1[1]))/d2
+        else:
+            t = 0
 	if (t < 0):
 		return point1
 	elif (t > 1):

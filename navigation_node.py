@@ -50,12 +50,12 @@ def talker():
     rospy.init_node('navigation', anonymous=True)
     # Subscribe to topic "bike_state" to get data and then call update_bike_state with data
     rospy.Subscriber("bike_state", Float32MultiArray, update_bike_state) 
-    rospy.Subscriber("gps_state", Float32MultiArray, update_bike_xy)
+    rospy.Subscriber("gps", Float32MultiArray, update_bike_xy)
     rospy.Subscriber("paths", Int32MultiArray, path_parse) 
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         new_map = new_nav.map_model
-	    rospy.loginfo(new_nav.direction_to_turn())
+        rospy.loginfo(new_nav.direction_to_turn())
         pub.publish(new_nav.direction_to_turn())
         rate.sleep()
 
