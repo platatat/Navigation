@@ -3,6 +3,7 @@
 import rospy
 from std_msgs.msg import Int32
 from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Twist
 import nav
 import numpy as np
 from std_msgs.msg import Int32MultiArray
@@ -48,11 +49,31 @@ def update_bike_xy(data):
         new_bike.xB = xy_point[0]
         new_bike.yB = xy_point[1]
 
+def keyboard_update(data):
+    #rospy.loginfo(data) 
+    x = data.linear.x
+    z = data.angular.z
+    v = .5
+    if x>0 and z == 0: #up
+        new_bike.yB += v 
+    if x<0 and z == 0: #down
+        new_bike.yB -= v 
+    if z>0 and x == 0: #left
+        new_bike.xB -=v        
+    if z<0 and x == 0: #right
+        new_bike.xB +=v
+    if x>0 and z > 0: #ccw
+        psi = new_bike.psi
+        new_bike.psi = (psi + np.pi/12)%(2*np.pi) 
+    if x>0 and z < 0: #cw
+        psi = new_bike.psi
+        new_bike.psi = (psi + np.pi/12)%(2*np.pi)
 
 def talker():
     pub = rospy.Publisher('nav_instr', Int32, queue_size=10)
     rospy.init_node('navigation', anonymous=True)
     # Subscribe to topic "bike_state" to get data and then call update_bike_state with data
+    rospy.Subscriber("cmd_vel", Twist, keyboard_update)
     rospy.Subscriber("bike_state", Float32MultiArray, update_bike_state) 
     rospy.Subscriber("gps", Float32MultiArray, update_bike_xy)
     rospy.Subscriber("paths", Int32MultiArray, path_parse) 
@@ -62,7 +83,7 @@ def talker():
         if not_ready:
             pub.publish(0)
         else:
-            #rospy.loginfo(new_nav.direction_to_turn())
+            #rospy.loginfo((new_bike.xB, new_bike.yB, new_bike.psi, new_nav.direction_to_turn()))
             pub.publish(new_nav.direction_to_turn())
         rate.sleep()
 
