@@ -94,7 +94,9 @@ def parse_json(presets=False):
 		print points
 		# print points2
 		return points
+
 	else:
+		
 		return [(0,0), (20, 5), (40, 5)]
 
 

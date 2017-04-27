@@ -31,14 +31,24 @@ def nearest_point_on_path(path, point):
 	point2 = path[1]
 	dist = distance(point1, point2)
 	d2 = dist2(point1, point2)
-        if (d2!=0):
-	    t = ((point[0] - point1[0])*(point2[0]-point1[0]) + (point[1] - point1[1]) * (point2[1] - point1[1]))/d2
-        else:
-            t = 0
+	if (d2 != 0):
+		print 'D2 IS ', d2
+		print "HELLO"
+		print "point is ", point
+		print "point1 is ", point1
+		summ = ((point[0] - point1[0])*(point2[0]-point1[0]) + (point[1] - point1[1]) * (point2[1] - point1[1]))
+		print "summmm is ", summ
+		t = summ/d2
+		print "D2 AFTER IS", d2
+		print "t IS !!!!!!!!!", t
+	else:
+		t = 0
 	if (t < 0):
 		return point1
 	elif (t > 1):
 		return point2
+	elif (t == 0):
+		return point
 	else:
 		x = point1[0] + t * (point2[0]-point1[0])
 		y = point1[1] + t * (point2[1]-point1[1])
@@ -92,5 +102,9 @@ def dot_product(v1, v2):
 def threeD_unit_vector(p1, p2):
 	""" Returns: the unit vector given points [p1] and [p2] """
 	v =  np.array([p2[0]-p1[0], p2[1]-p1[1], 0])
-	return v/np.linalg.norm(v)
+	# If it is the zero vector then just return that vector
+	if (np.linalg.norm(v)) == 0:
+		return v
+	else:
+		return v/np.linalg.norm(v)
 
