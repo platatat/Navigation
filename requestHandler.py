@@ -97,7 +97,7 @@ def parse_json(presets=False):
 
 	else:
 		
-		return [(0,0), (20, 5), (40, 5)]
+		return [(0,0), (20, 5), (40, 5)] 
 
 
 # parse_json()

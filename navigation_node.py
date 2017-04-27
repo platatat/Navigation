@@ -32,17 +32,21 @@ def update_bike_state(data):
 
 
 def update_bike_xy(data):
-    lat = data.data[0] # In degrees 
-    lon = data.data[1]
-    psi = data.data[7] # This needs to be in rads
-    velocity = data.data[8]
+    if data.data[0] == 0 and data.data[1] == 0:
+        not_ready = True
+    else:
+        not_ready = False
+        lat = data.data[0] # In degrees 
+        lon = data.data[1]
+        psi = data.data[7] # This needs to be in rads
+        velocity = data.data[8]
 
-    xy_point = requestHandler.math_convert(lat, lon)
+        xy_point = requestHandler.math_convert(lat, lon)
 
-    new_bike.psi = psi
-    new_bike.v = velocity
-    new_bike.xB = xy_point[0]
-    new_bike.yB = xy_point[1]
+        new_bike.psi = psi
+        new_bike.v = velocity
+        new_bike.xB = xy_point[0]
+        new_bike.yB = xy_point[1]
 
 
 def talker():
@@ -55,12 +59,16 @@ def talker():
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         new_map = new_nav.map_model
-        rospy.loginfo(new_nav.direction_to_turn())
-        pub.publish(new_nav.direction_to_turn())
+        if not_ready:
+            pub.publish(0)
+        else:
+            #rospy.loginfo(new_nav.direction_to_turn())
+            pub.publish(new_nav.direction_to_turn())
         rate.sleep()
 
 if __name__ == '__main__':
     try:
+        not_ready = True
         new_bike = bikeState.Bike(0, -10, 0.1, np.pi/3, 0, 0, 3.57)
         waypoints = [(0.1, 0.1), (30.1, 0.1), (31.1, 0.1)]
         new_map = mapModel.Map_Model(new_bike, waypoints, [], [])
