@@ -32,9 +32,9 @@ def update_bike_state(data):
 
 
 def update_bike_xy(data):
-    lat = data.data[0]
+    lat = data.data[0] # In degrees 
     lon = data.data[1]
-    psi = data.data[7]
+    psi = data.data[7] # This needs to be in rads
     velocity = data.data[8]
 
     xy_point = requestHandler.math_convert(lat, lon)

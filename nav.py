@@ -203,8 +203,8 @@ class Nav(object):
 		
 		k1 = .35 #gain for distance correction
 		k2 = 1 #gain for angle correction
-
 		nearest_p = geometry.nearest_point_on_path(self.map_model.paths[self.target_path], (self.map_model.bike.xB, self.map_model.bike.yB))
+		# print "NEAREST_P IS", nearest_p
 		perp_v = geometry.threeD_unit_vector(nearest_p, (self.map_model.bike.xB, self.map_model.bike.yB))
 
 		# find which way the cross product, perp_v vs path_v is pointing to determine the sign 

@@ -56,9 +56,10 @@ def main_loop(nav, bike):
 
 if __name__ == '__main__':
 	
-	new_bike = bikeState.Bike(-1, -1, 0.1, 0, 0, 0, 3.57)
-	# waypoints = requestHandler.parse_json()
-	waypoints = [(0,0), (20, 5), (40, 5)]
+	new_bike = bikeState.Bike(0, 0, 0.1, math.pi/2, 0, 0, 3.57)
+	# waypoints = requestHandler.parse_json(True)
+	# waypoints = [(0,0), (20, 5), (40, 5)]
+	waypoints = [(0,0), (-5, 20)]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	print "PATHS", new_nav.map_model.paths
