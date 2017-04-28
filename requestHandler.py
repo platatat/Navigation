@@ -97,7 +97,9 @@ def parse_json(presets=False):
 
 	else:
 		
-		return [(0,0), (20, 5), (40, 5)] 
+		point1 = math_convert(42.4450492859, -76.4836349487)
+                point2 = math_convert(42.4442214966, -76.4835510254)
+                return [point1, point2] 
 
 
 # parse_json()

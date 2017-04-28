@@ -81,7 +81,7 @@ def talker():
     while not rospy.is_shutdown():
         new_map = new_nav.map_model
         if not_ready:
-            pub.publish(0)
+            pub.publish(new_nav.direction_to_turn())
         else:
             #rospy.loginfo((new_bike.xB, new_bike.yB, new_bike.psi, new_nav.direction_to_turn()))
             pub.publish(new_nav.direction_to_turn())
