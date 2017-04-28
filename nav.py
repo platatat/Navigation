@@ -236,6 +236,8 @@ class Nav(object):
 			steerD = -MAX_STEER
 		#else don't do anything
 		print "steerD is", steerD
+		#normalize
+		# steerD = steerD / MAX_STEER
 		return steerD
 
 
