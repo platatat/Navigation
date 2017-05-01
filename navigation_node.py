@@ -36,18 +36,30 @@ def update_bike_xy(data):
     if data.data[0] == 0 and data.data[1] == 0:
         not_ready = True
     else:
-        not_ready = False
-        lat = data.data[0] # In degrees 
-        lon = data.data[1]
-        psi = data.data[7] # This needs to be in rads
-        velocity = data.data[8]
+        time_since_last = data.data[5]
+        EPSILON = 25
+        if time_since_last > EPSILON:
+            not_ready = False
+            lat = data.data[0] # In degrees 
+            lon = data.data[1]
+            psi = data.data[7] # This needs to be in rads
+            velocity = data.data[8]
+            xy_point = requestHandler.math_convert(lat, lon)
 
-        xy_point = requestHandler.math_convert(lat, lon)
+            d_psi = float(psi - old_psi)/old_time_since_last
+            new_bike.psi = psi
+            new_bike.v = velocity
+            #Update old velocity and angle for extrapolation
+            old_v = velocity
+            old_psi = psi
+            new_bike.xB = xy_point[0]
+            new_bike.yB = xy_point[1]
+        else:
+            new_psi = d_psi*time_since_last + old_psi
+            new_x = velocity*cos(new_psi)
+            new_y = velocity*sin(new_psi)
+        old_time_since_last = data.data[5]
 
-        new_bike.psi = psi
-        new_bike.v = velocity
-        new_bike.xB = xy_point[0]
-        new_bike.yB = xy_point[1]
 
 def keyboard_update(data):
     #rospy.loginfo(data) 
@@ -89,6 +101,9 @@ def talker():
 
 if __name__ == '__main__':
     try:
+        old_psi = 0
+        old_v = 0
+        d_psi = 0
         not_ready = True
         new_bike = bikeState.Bike(0, -10, 0.1, np.pi/3, 0, 0, 3.57)
         waypoints = [(0.1, 0.1), (30.1, 0.1), (31.1, 0.1)]
