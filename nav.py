@@ -41,10 +41,10 @@ class Nav(object):
 		bike_position = (self.map_model.bike.xB, self.map_model.bike.yB)
 		for path_index in range(len(self.map_model.paths)):
                     nearest_point = geometry.nearest_point_on_path(self.map_model.paths[0], bike_position)
-			distance_to_bike = geometry.distance(nearest_point, bike_position)
-			if (closest_distance > distance_to_bike):
-				closest_distance = distance_to_bike
-				closest_path = path_index 
+		    distance_to_bike = geometry.distance(nearest_point, bike_position)
+		    if (closest_distance > distance_to_bike):
+			closest_distance = distance_to_bike
+			closest_path = path_index 
 		disp_next = self.displacement_to_turn(target_path = (closest_path+1)%len(self.map_model.paths))
 		target_path = (closest_path+1)%len(self.map_model.paths)
 		distance_next = geometry.distance_from_path(bike_position, self.map_model.paths[target_path])

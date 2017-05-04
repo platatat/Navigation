@@ -16,28 +16,34 @@ def main_loop(nav, bike):
 	""" This is the main loop that gets the nav command, passes it through bike dynamics
 	to get the updated state and plots the new state """
 	k = 0 
+	steerD = 0
+	iters = 0
 
 	while (k < 2000):
 
 		#plotting
 		plt.scatter(bike.xB, bike.yB)
 		plt.show()
-		plt.pause(0.0000000001)
+		plt.pause(0.0000001)
 
 		# Steer vs Time
 		# plt.scatter((k+1)*TIMESTEP, bike.delta)
 		# plt.show()
 		# plt.pause(0.00001)
 
-		if (nav.close_enough()):
-			steerD = nav.controller_direction_to_turn() #pd cotnroller takes over
-			print "pd Controller takes over"
-		else:
-			steerD = nav.direction_to_turn()
-			steerD = steerD * MAX_STEER * (-1)
-
+		# if (nav.close_enough()):
+		# 	steerD = nav.controller_direction_to_turn() #pd cotnroller takes over
+		# 	print "pd Controller takes over"
+		# else:
+		# 	steerD = nav.direction_to_turn()
+		# # 	steerD = steerD * MAX_STEER * (-1)
+		# if iters == 85:
+		# 	iters = 0
+		# 	steerD = nav.controller_direction_to_turn()
+		# iters+=1
+		print "STEER D IS", steerD
 		# steerD = nav.controller_direction_to_turn() #pd cotnroller takes over
-
+		steerD = nav.controller_direction_to_turn()
 		# print steerD
 		# if new state has new target path then recalculate delta
 		bike.update(bikeSim.new_state(bike, steerD))
@@ -56,10 +62,10 @@ def main_loop(nav, bike):
 
 if __name__ == '__main__':
 	
-	new_bike = bikeState.Bike(0, 0, 0.1, math.pi/2, 0, 0, 3.57)
+	new_bike = bikeState.Bike(0, 0, 0.1, 0, math.pi/6.0, 0, 3.57)
 	# waypoints = requestHandler.parse_json(True)
 	# waypoints = [(0,0), (20, 5), (40, 5)]
-	waypoints = [(0,0), (-5, 20)]
+	waypoints = [(0,0), (50, 5)]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	print "PATHS", new_nav.map_model.paths
