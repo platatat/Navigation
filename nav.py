@@ -40,7 +40,7 @@ class Nav(object):
 		closest_path = 0
 		bike_position = (self.map_model.bike.xB, self.map_model.bike.yB)
 		for path_index in range(len(self.map_model.paths)):
-			nearest_point = geometry.nearest_point_on_path(self.map_model.paths[path_index], bike_position)
+                    nearest_point = geometry.nearest_point_on_path(self.map_model.paths[0], bike_position)
 			distance_to_bike = geometry.distance(nearest_point, bike_position)
 			if (closest_distance > distance_to_bike):
 				closest_distance = distance_to_bike
@@ -168,7 +168,7 @@ class Nav(object):
 
 		Professor Ruina comment: This should also take into account the angle b/w the bike
 		and the path """
-		path = self.map_model.paths[self.find_closest_path()]
+		path = self.map_model.paths[0]
 		path_vector = geometry.unit_vector(path[0], path[1])
 		bike_vector = self.map_model.bike.vector
 		angle_from_path = geometry.angle_between_vectors(bike_vector, path_vector)
@@ -183,8 +183,8 @@ class Nav(object):
 	def controller_direction_to_turn(self):
 		""" pd controller """
 		path = self.map_model.paths[self.find_closest_path()]
-		self.target_path = self.find_closest_path()#QUICK 
-
+		#self.target_path = self.find_closest_path()#QUICK 
+                self.target_path = 0
 
 		print"TARGET PATH IS", self.find_closest_path()
 

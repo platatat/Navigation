@@ -2,6 +2,7 @@
 # license removed for brevity
 import rospy
 from std_msgs.msg import Int32
+from std_msgs.msg import Float32
 from geometry_msgs.msg import Pose2D
 from geometry_msgs.msg import Twist
 import nav
@@ -33,9 +34,10 @@ def update_bike_state(data):
 
 
 def update_bike_xy(data):
-    if data.data[0] == 0 and data.data[1] == 0:
-        not_ready = True
-    else:
+#    if data.data[0] == 0 and data.data[1] == 0:
+#       not_ready = True
+#    else:
+    if (True):
         not_ready = False
         lat = data.data[0] # In degrees 
         lon = data.data[1]
@@ -70,21 +72,22 @@ def keyboard_update(data):
         new_bike.psi = (psi + np.pi/12)%(2*np.pi)
 
 def talker():
-    pub = rospy.Publisher('nav_instr', Int32, queue_size=10)
+    pub = rospy.Publisher('nav_instr', Float32, queue_size=10)
     rospy.init_node('navigation', anonymous=True)
     # Subscribe to topic "bike_state" to get data and then call update_bike_state with data
     rospy.Subscriber("cmd_vel", Twist, keyboard_update)
     rospy.Subscriber("bike_state", Float32MultiArray, update_bike_state) 
     rospy.Subscriber("gps", Float32MultiArray, update_bike_xy)
-    rospy.Subscriber("paths", Int32MultiArray, path_parse) 
+    rospy.Subscriber("paths", Float32MultiArray, path_parse) 
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         new_map = new_nav.map_model
-        if not_ready:
-            pub.publish(new_nav.direction_to_turn())
-        else:
+        #if not_ready:
+         #   pub.publish(3)
+        #else:
+        if True:
             #rospy.loginfo((new_bike.xB, new_bike.yB, new_bike.psi, new_nav.direction_to_turn()))
-            pub.publish(new_nav.direction_to_turn())
+            pub.publish(new_nav.controller_direction_to_turn())
         rate.sleep()
 
 if __name__ == '__main__':

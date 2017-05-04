@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import nav
-from std_msgs.msg import Int32MultiArray
+from std_msgs.msg import Float32MultiArray
 import numpy as np
 from std_msgs.msg import MultiArrayLayout
 from std_msgs.msg import MultiArrayDimension
@@ -18,7 +18,7 @@ def setup_dimension():
     return dim
 
 def map_server():
-    pub = rospy.Publisher('paths', Int32MultiArray, queue_size=10) 
+    pub = rospy.Publisher('paths', Float32MultiArray, queue_size=10) 
     rospy.init_node('map', anonymous=True) # Initialize ROS node 'map'
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
