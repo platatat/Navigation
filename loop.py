@@ -11,6 +11,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib import animation
 from matplotlib import collections  as mc
+from matplotlib.patches import Wedge
 
 def main_loop(nav, bike):
 	""" This is the main loop that gets the nav command, passes it through bike dynamics
@@ -19,10 +20,18 @@ def main_loop(nav, bike):
 	steerD = 0
 	iters = 0
 
+	# For plotting the bicycle
+	axes = plt.gca()
+
 	while (k < 2000):
 
-		#plotting
-		plt.scatter(bike.xB, bike.yB)
+		# Plot the bike as a wedge pointing in the right direction
+		bike_heading = bike.psi * (180/math.pi) # Converted to degrees
+		wedge_angle = 45 # The angle covered by the wedge
+		bike_polygon = Wedge((bike.xB, bike.yB), 0.2,
+				     bike_heading - wedge_angle / 2 + 180,
+				     bike_heading + wedge_angle / 2 + 180, fc="black")
+		axes.add_patch(bike_polygon)
 		plt.show()
 		plt.pause(0.0000001)
 
@@ -32,14 +41,14 @@ def main_loop(nav, bike):
 		# plt.pause(0.00001)
 
 		# if (nav.close_enough()):
-		# 	steerD = nav.controller_direction_to_turn() #pd cotnroller takes over
-		# 	print "pd Controller takes over"
+		#	steerD = nav.controller_direction_to_turn() #pd cotnroller takes over
+		#	print "pd Controller takes over"
 		# else:
-		# 	steerD = nav.direction_to_turn()
-		# # 	steerD = steerD * MAX_STEER * (-1)
+		#	steerD = nav.direction_to_turn()
+		# #	steerD = steerD * MAX_STEER * (-1)
 		# if iters == 85:
-		# 	iters = 0
-		# 	steerD = nav.controller_direction_to_turn()
+		#	iters = 0
+		#	steerD = nav.controller_direction_to_turn()
 		# iters+=1
 		print "STEER D IS", steerD
 		# steerD = nav.controller_direction_to_turn() #pd cotnroller takes over
@@ -48,7 +57,7 @@ def main_loop(nav, bike):
 		# if new state has new target path then recalculate delta
 		bike.update(bikeSim.new_state(bike, steerD))
 		# if k == 20:
-		# 	print "HELLOOOO", nav.calc_overshoot()
+		#	print "HELLOOOO", nav.calc_overshoot()
 			# print "HELLOOOO", nav.calc_overshoot()
 		# path_angle = geometry.line_angle(nav.map_model.paths[nav.target_path])
 		# bike_angle = nav.map_model.bike.pi
@@ -76,9 +85,8 @@ if __name__ == '__main__':
 	paths = new_map_model.paths
 	fig = plt.figure()
 	fig.set_dpi(100) #dots per inch
- 	ax = plt.axes(xlim=(0, 20), ylim=(0, 20)) 
- 	lc = mc.LineCollection(paths, linewidths=2, color = "black")
+	ax = plt.axes(xlim=(0, 20), ylim=(0, 20))
+	lc = mc.LineCollection(paths, linewidths=2, color = "blue")
 	ax.add_collection(lc)
 	plt.show() 
 	main_loop(new_nav, new_bike)
-	
