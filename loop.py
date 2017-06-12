@@ -11,7 +11,8 @@ import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib import animation
 from matplotlib import collections  as mc
-from matplotlib.patches import Wedge
+from matplotlib.path import Path
+from matplotlib.patches import Wedge, PathPatch
 
 def main_loop(nav, bike):
 	""" This is the main loop that gets the nav command, passes it through bike dynamics
@@ -23,17 +24,37 @@ def main_loop(nav, bike):
 	# For plotting the bicycle
 	axes = plt.gca()
 
+	# Holds past locations of the bike, for plotting
+	bike_trajectory = [(bike.xB, bike.yB)]
+
+	# We need to keep this around to clear it after path updates
+	path_patch = None
+
+	prev_bike_patch = None
+
 	while (k < 2000):
 
-		# Plot the bike as a wedge pointing in the right direction
+		# Draw the trajectory of the bike
+		if path_patch:
+			path_patch.remove()
+		path_patch = PathPatch(Path(bike_trajectory), fill=False,
+				       linewidth=2)
+		axes.add_patch(path_patch)
+
+		# Plot the bike as a wedge pointing in the direction bike.psi
+		if prev_bike_patch:
+			prev_bike_patch.remove()
 		bike_heading = bike.psi * (180/math.pi) # Converted to degrees
 		wedge_angle = 45 # The angle covered by the wedge
 		bike_polygon = Wedge((bike.xB, bike.yB), 0.2,
 				     bike_heading - wedge_angle / 2 + 180,
 				     bike_heading + wedge_angle / 2 + 180, fc="black")
 		axes.add_patch(bike_polygon)
+		prev_bike_patch = bike_polygon
 		plt.show()
 		plt.pause(0.0000001)
+
+		bike_trajectory.append((bike.xB, bike.yB))
 
 		# Steer vs Time
 		# plt.scatter((k+1)*TIMESTEP, bike.delta)
