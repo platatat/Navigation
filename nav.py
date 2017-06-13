@@ -50,14 +50,14 @@ class Nav(object):
 			next_path_distance_to_bike = geometry.distance(nearest_point_on_next_path, bike_position)
 			if current_path_distance_to_bike > next_path_distance_to_bike:
 				closest_path = path_index + 1
-		# 	if (closest_distance > distance_to_bike):
-		# 		closest_distance = distance_to_bike
-		# 		closest_path = path_index 
+		#	if (closest_distance > distance_to_bike):
+		#		closest_distance = distance_to_bike
+		#		closest_path = path_index 
 		# disp_next = self.displacement_to_turn(target_path = (closest_path+1)%len(self.map_model.paths))
 		# target_path = (closest_path+1)%len(self.map_model.paths)
 		# distance_next = geometry.distance_from_path(bike_position, self.map_model.paths[target_path])
 		# if disp_next - np.abs(distance_next)>-0.01:
-		# 	closest_path = np.mod(closest_path + 1,len(self.map_model.paths))
+		#	closest_path = np.mod(closest_path + 1,len(self.map_model.paths))
 		return closest_path
 	
 	
@@ -269,6 +269,7 @@ class Nav(object):
 		adj = math.cos(psi) * ld
 		goalpoint_position = (self.map_model.bike.xB + adj, self.map_model.bike.yB + opp)
 		gp_on_path = geometry.nearest_point_on_path(path, goalpoint_position)
+		self.lookahead_point = gp_on_path # Exposed for the visualization code
 		print "bike position", (self.map_model.bike.xB, self.map_model.bike.yB)
 		lookahead_vector = geometry.unit_vector((self.map_model.bike.xB, self.map_model.bike.yB), gp_on_path)
 		print "l vector", lookahead_vector
@@ -298,6 +299,7 @@ class Nav(object):
 		psi = self.map_model.bike.psi #bike direction (angle)
 		print "bike position", (self.map_model.bike.xB, self.map_model.bike.yB)
 		lookahead_vector = geometry.unit_vector((self.map_model.bike.xB, self.map_model.bike.yB), path[1]) #vector from bike position to lookahead point
+		self.lookahead_point = path[1] # Exposed for the visualization code
 		print "l vector", lookahead_vector
 		print "bike vector", bike_vector
 		lookahead_angle = geometry.angle_between_vectors(bike_vector, lookahead_vector)
