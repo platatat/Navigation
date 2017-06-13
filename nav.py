@@ -16,6 +16,8 @@ class Nav(object):
 		""" Nav initializer """
 		self.map_model = map_model
 		self.target_path = 0
+		
+	#def angle
 
 
 	def direction_to_turn(self):
@@ -36,23 +38,44 @@ class Nav(object):
 
 	def find_closest_path(self):
 		""" Finds and returns the closest path to the bike from the list of paths """
-		closest_distance = sys.maxint
+		#closest_distance = sys.maxint
 		closest_path = 0
 		bike_position = (self.map_model.bike.xB, self.map_model.bike.yB)
-		for path_index in range(len(self.map_model.paths)):
-                    nearest_point = geometry.nearest_point_on_path(self.map_model.paths[0], bike_position)
-		    distance_to_bike = geometry.distance(nearest_point, bike_position)
-		    if (closest_distance > distance_to_bike):
-			closest_distance = distance_to_bike
-			closest_path = path_index 
-		disp_next = self.displacement_to_turn(target_path = (closest_path+1)%len(self.map_model.paths))
-		target_path = (closest_path+1)%len(self.map_model.paths)
-		distance_next = geometry.distance_from_path(bike_position, self.map_model.paths[target_path])
-		if disp_next - np.abs(distance_next)>-0.01:
-			closest_path = np.mod(closest_path + 1,len(self.map_model.paths))
+		
+		# added by Josh
+		for path_index in range(len(self.map_model.paths)-1):
+			nearest_point_on_current_path = geometry.nearest_point_on_path(self.map_model.paths[path_index], bike_position)
+			nearest_point_on_next_path = geometry.nearest_point_on_path(self.map_model.paths[path_index+1], bike_position)
+			current_path_distance_to_bike = geometry.distance(nearest_point_on_current_path, bike_position)
+			next_path_distance_to_bike = geometry.distance(nearest_point_on_next_path, bike_position)
+			if current_path_distance_to_bike > next_path_distance_to_bike:
+				closest_path = path_index + 1
+		# 	if (closest_distance > distance_to_bike):
+		# 		closest_distance = distance_to_bike
+		# 		closest_path = path_index 
+		# disp_next = self.displacement_to_turn(target_path = (closest_path+1)%len(self.map_model.paths))
+		# target_path = (closest_path+1)%len(self.map_model.paths)
+		# distance_next = geometry.distance_from_path(bike_position, self.map_model.paths[target_path])
+		# if disp_next - np.abs(distance_next)>-0.01:
+		# 	closest_path = np.mod(closest_path + 1,len(self.map_model.paths))
 		return closest_path
-
-
+	
+	
+	def find_closest_path_to_goalpoint(self, ld):
+		"""Added by Josh"""
+		psi = self.map_model.bike.psi
+		opp = math.sin(psi) * ld
+		adj = math.cos(psi) * ld
+		goalpoint_position = (self.map_model.bike.xB + adj, self.map_model.bike.yB + opp)
+		closest_path = 0
+		for path_index in range(len(self.map_model.paths)-1):
+			nearest_point_on_current_path = geometry.nearest_point_on_path(self.map_model.paths[path_index], goalpoint_position)
+			nearest_point_on_next_path = geometry.nearest_point_on_path(self.map_model.paths[path_index+1], goalpoint_position)
+			current_path_distance_to_gp = geometry.distance(nearest_point_on_current_path, goalpoint_position)
+			next_path_distance_to_gp = geometry.distance(nearest_point_on_next_path, goalpoint_position)
+			if current_path_distance_to_gp > next_path_distance_to_gp:
+				closest_path = path_index + 1
+		return closest_path
 
 	def displacement_to_turn(self, b = None, target_path = None):
 		""" Returns: the delta which represents the distance at which the bike 
@@ -118,7 +141,6 @@ class Nav(object):
 
 			path_angle = geometry.line_angle(nav_copy.map_model.paths[nav_copy.target_path])
 			bike_angle = nav_copy.map_model.bike.psi
-			# print "VALUEE", math.fabs(path_angle - bike_angle)
 			if (math.fabs(path_angle - bike_angle) < 0.005): # If caught in infinite loop means that this value should be greater
 				point_found = True
 
@@ -146,7 +168,6 @@ class Nav(object):
 
 			path_angle = geometry.line_angle(nav_copy.map_model.paths[nav_copy.target_path])
 			bike_angle = nav_copy.map_model.bike.psi
-			# print "VALUEE", math.fabs(path_angle - bike_angle)
 			if (math.fabs(path_angle - bike_angle) < 0.007):
 				point_found = True
 
@@ -174,8 +195,6 @@ class Nav(object):
 		angle_from_path = geometry.angle_between_vectors(bike_vector, path_vector)
 
 		distance = geometry.distance_from_path((self.map_model.bike.xB, self.map_model.bike.yB), self.map_model.paths[self.target_path])
-		# print "angle from line is ", angle_from_path
-		# print "distance is ", distance
 		# return ( ( np.abs(distance) < 3 ) and ( np.abs(angle_from_path) < math.pi/2.0) )
 		return True
 
@@ -184,7 +203,7 @@ class Nav(object):
 		""" pd controller """
 		path = self.map_model.paths[self.find_closest_path()]
 		#self.target_path = self.find_closest_path()#QUICK 
-                self.target_path = 0
+		self.target_path = 0
 
 		print"TARGET PATH IS", self.find_closest_path()
 
@@ -239,7 +258,63 @@ class Nav(object):
 		#normalize
 		# steerD = steerD / MAX_STEER
 		return steerD
+	
+	def pure_pursuit(self):
+		"""Uses lookahead point distance ld from bike to return a steering angle"""
+		ld = 5 #lookahead distance
+		path = self.map_model.paths[self.find_closest_path_to_goalpoint(ld)] #path closest to lookahead point
+		bike_vector = self.map_model.bike.vector
+		psi = self.map_model.bike.psi #bike direction (angle)
+		opp = math.sin(psi) * ld 
+		adj = math.cos(psi) * ld
+		goalpoint_position = (self.map_model.bike.xB + adj, self.map_model.bike.yB + opp)
+		gp_on_path = geometry.nearest_point_on_path(path, goalpoint_position)
+		print "bike position", (self.map_model.bike.xB, self.map_model.bike.yB)
+		lookahead_vector = geometry.unit_vector((self.map_model.bike.xB, self.map_model.bike.yB), gp_on_path)
+		print "l vector", lookahead_vector
+		print "bike vector", bike_vector
+		lookahead_angle = geometry.angle_between_vectors(bike_vector, lookahead_vector)
+		lookahead_perp = np.array([-lookahead_vector[1], lookahead_vector[0]])
+		dot = geometry.dot_product(lookahead_perp, bike_vector)
+		lookahead_angle = lookahead_angle * np.sign(dot)
+		print "l angle", lookahead_angle
+		k = 2*math.sin(lookahead_angle)/ld
+		print "k is ", k
+		L = 0.9144
+		steerD = math.atan(k*L)
+		print "steeeerD", steerD
+		if (steerD > MAX_STEER):
+			steerD = MAX_STEER
+		elif (steerD < -MAX_STEER):
+			steerD = -MAX_STEER
+		return steerD
 
+	def pure_pursuit_waypoint(self):
+		"""Uses next waypoint as lookahead point to return a steering angle"""
+		
+		ld = 2 #lookahead distance
+		path = self.map_model.paths[self.find_closest_path()]
+		bike_vector = self.map_model.bike.vector
+		psi = self.map_model.bike.psi #bike direction (angle)
+		print "bike position", (self.map_model.bike.xB, self.map_model.bike.yB)
+		lookahead_vector = geometry.unit_vector((self.map_model.bike.xB, self.map_model.bike.yB), path[1]) #vector from bike position to lookahead point
+		print "l vector", lookahead_vector
+		print "bike vector", bike_vector
+		lookahead_angle = geometry.angle_between_vectors(bike_vector, lookahead_vector)
+		lookahead_perp = np.array([-lookahead_vector[1], lookahead_vector[0]])
+		dot = geometry.dot_product(lookahead_perp, bike_vector)
+		lookahead_angle = lookahead_angle * np.sign(dot)
+		print "l angle", lookahead_angle
+		k = 2*math.sin(lookahead_angle)/ld #curvature
+		print "k is ", k
+		L = 0.9144 #wheelbase distance
+		steerD = math.atan(k*L)
+		print "steeeerD", steerD
+		if (steerD > MAX_STEER):
+			steerD = MAX_STEER
+		elif (steerD < -MAX_STEER):
+			steerD = -MAX_STEER
+		return steerD
 
 
 

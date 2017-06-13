@@ -32,15 +32,15 @@ def nearest_point_on_path(path, point):
 	dist = distance(point1, point2)
 	d2 = dist2(point1, point2)
 	if (d2 != 0):
-		print 'D2 IS ', d2
-		print "HELLO"
-		print "point is ", point
-		print "point1 is ", point1
+		# print 'D2 IS ', d2
+		# print "HELLO"
+		# print "point is ", point
+		# print "point1 is ", point1
 		summ = ((point[0] - point1[0])*(point2[0]-point1[0]) + (point[1] - point1[1]) * (point2[1] - point1[1]))
-		print "summmm is ", summ
+		# print "summmm is ", summ
 		t = summ/d2
-		print "D2 AFTER IS", d2
-		print "t IS !!!!!!!!!", t
+		# print "D2 AFTER IS", d2
+		# print "t IS !!!!!!!!!", t
 	else:
 		t = 0
 	if (t < 0):
@@ -89,6 +89,11 @@ def angle_between_vectors(v1, v2):
 	dot = v1[0]*v2[0] + v1[1]*v2[1]
 	abs1 = math.sqrt(v1[0]**2 + v1[1]**2)
 	abs2 = math.sqrt(v2[0]**2 + v2[1]**2)
+	# added by josh
+	if (dot/(abs1*abs2) > 1):
+		return math.acos(1)
+	elif (dot/(abs1*abs2) < -1):
+		return math.acos(-1)
 	return math.acos(dot/(abs1*abs2))
 
 def angle_between_two_lines(line1, line2):
@@ -107,4 +112,5 @@ def threeD_unit_vector(p1, p2):
 		return v
 	else:
 		return v/np.linalg.norm(v)
+
 
