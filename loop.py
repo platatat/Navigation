@@ -1,3 +1,9 @@
+import sys
+if sys.platform == "darwin":
+	# Mac
+	import matplotlib
+	matplotlib.use('TkAgg')
+
 import nav
 import mapModel
 import math
