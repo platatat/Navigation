@@ -14,102 +14,83 @@ from matplotlib import collections  as mc
 from matplotlib.path import Path
 from matplotlib.patches import Wedge, PathPatch, Circle
 
-def main_loop(nav, bike):
-	""" This is the main loop that gets the nav command, passes it through bike dynamics
-	to get the updated state and plots the new state """
-	k = 0 
-	steerD = 0
-	iters = 0
+def loop_using_animation(nav, bike, map_model):
+	"""This code uses blitting and callbacks to simulate the
+	bike."""
+	figure, axes = plt.figure(), plt.axes(xlim=(-5, 50), ylim=(-5, 50))
 
-	# For plotting the bicycle
-	axes = plt.gca()
+	paths = new_map_model.paths
 
-	# Holds past locations of the bike, for plotting
-	bike_trajectory = [(bike.xB, bike.yB)]
+	# Draw the paths
+	lc = mc.LineCollection(paths, linewidths=2, color = "blue")
+	axes.add_collection(lc)
 
-	# We need to keep this around to clear it after path updates
-	path_patch = None
+	# Paths won't change, so capture them
+	figure.canvas.draw()
+	background = [figure.canvas.copy_from_bbox(axes.bbox)]
 
-	prev_bike_patch = None
-	prev_lookahead_patch = None
+	# Create bike polygon
+	bike_heading = bike.psi * (180/math.pi) # heading is psi, but in degrees
+	wedge_angle = 45 # The angle covered by the wedge (degrees)
+	theta1 = bike_heading - wedge_angle / 2 + 180
+	theta2 = bike_heading + wedge_angle / 2 + 180
+	bike_polygon = Wedge((bike.xB, bike.yB), 1, theta1, theta2, fc="black")
+	axes.add_artist(bike_polygon)
 
-	while (k < 2000):
+	# Set up resizing handlers
+	listener_id = [None]
+	def safe_draw():
+		canvas = figure.canvas
+		if listener_id[0]: canvas.mpl_disconnect(listener_id[0])
+		canvas.draw()
+		listener_id[0] = canvas.mpl_connect("draw_event", grab_background)
+	def grab_background(event=None):
+                bike_polygon.set_visible(False)
+		safe_draw()
+		background[0] = figure.canvas.copy_from_bbox(figure.bbox)
+                bike_polygon.set_visible(True)
+		blit()
+	def blit():
+		figure.canvas.restore_region(background[0])
+		axes.draw_artist(bike_polygon)
+		figure.canvas.blit(axes.bbox)
+	listener_id[0] = figure.canvas.mpl_connect("draw_event", grab_background)
 
-		# Draw the trajectory of the bike
-		if path_patch:
-			path_patch.remove()
-		path_patch = PathPatch(Path(bike_trajectory), fill=False,
-				       linewidth=2)
-		axes.add_patch(path_patch)
+	# Set up trajectory
+	trajectory_pts = []
 
-		# Plot the bike as a wedge pointing in the direction bike.psi
-		if prev_bike_patch:
-			prev_bike_patch.remove()
-		bike_heading = bike.psi * (180/math.pi) # Converted to degrees
-		wedge_angle = 45 # The angle covered by the wedge
-		bike_polygon = Wedge((bike.xB, bike.yB), 0.3,
-				     bike_heading - wedge_angle / 2 + 180,
-				     bike_heading + wedge_angle / 2 + 180, fc="black")
-		axes.add_patch(bike_polygon)
-		prev_bike_patch = bike_polygon
-		plt.show()
-		plt.pause(0.00000000000001)
+	# This timer runs simulation steps and draws the results
+	figure_restore = figure.canvas.restore_region
+	get_steering_angle = nav.pure_pursuit
+	simulation_step = lambda angle: bike.update(bikeSim.new_state(bike, angle))
+        figure_blit = figure.canvas.blit
+        def full_step():
+		figure_restore(background[0])
+		simulation_step(get_steering_angle())
 
-		bike_trajectory.append((bike.xB, bike.yB))
+		# Update bike polygon properties
+		wedge_dir = bike.psi * (180/math.pi) + 180
+		bike_polygon.set(center = (bike.xB, bike.yB),
+				 theta1 = wedge_dir - wedge_angle / 2,
+				 theta2 = wedge_dir + wedge_angle / 2)
+		axes.draw_artist(bike_polygon)
+		figure_blit(axes.bbox)
 
-		if prev_lookahead_patch:
-			prev_lookahead_patch.remove()
-		if hasattr(nav, "lookahead_point"):
-			lookahead_patch = Circle(nav.lookahead_point, radius=0.5)
-			axes.add_patch(lookahead_patch)
-			prev_lookahead_patch = lookahead_patch
+        # Start the update & refresh timer
+        figure.canvas.new_timer(interval=0, callbacks=[(full_step, [], {})]).start()
 
-		# Steer vs Time
-		# plt.scatter((k+1)*TIMESTEP, bike.delta)
-		# plt.show()
-		# plt.pause(0.00001)
-
-		# if (nav.close_enough()):
-		#	steerD = nav.controller_direction_to_turn() #pd cotnroller takes over
-		# else:
-		#	steerD = nav.direction_to_turn()
-		# #	steerD = steerD * MAX_STEER * (-1)
-		# if iters == 85:
-		#	iters = 0
-		#	steerD = nav.controller_direction_to_turn()
-		# iters+=1
-		# print "STEER D IS", steerD
-		# steerD = nav.controller_direction_to_turn() #pd cotnroller takes over
-		steerD = nav.pure_pursuit()
-		print "STEER D IS", steerD 
-		# if new state has new target path then recalculate delta
-		bike.update(bikeSim.new_state(bike, steerD))
-		# if k == 20:
-		# path_angle = geometry.line_angle(nav.map_model.paths[nav.target_path])
-		# bike_angle = nav.map_model.bike.pi
-
-
-		k = k + 1
-
-		# When it crosses the line... ?
+        # Display the window with the simulation
+        plt.show()
 
 
 if __name__ == '__main__':
-	
 	new_bike = bikeState.Bike(0, 0, 0.1, 0, math.pi/6.0, 0, 3.57)
 	# waypoints = requestHandler.parse_json(True)
 	#waypoints = [(0,0), (20, 5), (40, 5)]
 	#waypoints = [(0,0), (50, 5)]
-	waypoints = [(0,0), (20, 5), (40, 5), (60, 0), (70, -10)] 
+	waypoints = [(0,0), (20, 5), (40, 5), (60, 0), (70, -10)]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	# print "PATHS", new_nav.map_model.paths
-	plt.ion() # enables interactive plotting
-	paths = new_map_model.paths
-	fig = plt.figure()
-	fig.set_dpi(100) #dots per inch
-	ax = plt.axes(xlim=(0, 20), ylim=(0, 20))
-	lc = mc.LineCollection(paths, linewidths=2, color = "blue")
-	ax.add_collection(lc)
-	plt.show() 
-	main_loop(new_nav, new_bike)
+
+	loop_using_animation(new_nav, new_bike, new_map_model)
