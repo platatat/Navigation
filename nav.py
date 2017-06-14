@@ -312,7 +312,7 @@ class Nav(object):
 	def pure_pursuit_2(self):
 		"""ADD SPEC HERE"""
 		
-		ld = 4
+		ld = 5 #lookahead distance
 		bike_vector = self.map_model.bike.vector
 		bike_position = (self.map_model.bike.xB, self.map_model.bike.yB)
 		print "bike position", bike_position
@@ -321,11 +321,14 @@ class Nav(object):
 		start_point_on_path = geometry.nearest_point_on_path(path, bike_position)
 		path_vector = geometry.unit_vector(path[0], path[1])
 		gp_on_path = (start_point_on_path[0] + path_vector[0]*ld, start_point_on_path[1] + path_vector[1]*ld)
+		
+		#if goalpoint goes beyond path
 		if not geometry.is_between(path[0], path[1], gp_on_path):
 			dist_past_end = geometry.distance(gp_on_path, path[1])
 			next_path = self.map_model.paths[path_index+1]
 			next_path_vector = geometry.unit_vector(next_path[0],next_path[1])
 			gp_on_path = (next_path[0][0] + next_path_vector[0]*ld, next_path[0][1] + next_path_vector[1]*ld)
+		
 		self.lookahead_point = gp_on_path # Exposed for the visualization code
 		print "bike position", (self.map_model.bike.xB, self.map_model.bike.yB)
 		lookahead_vector = geometry.unit_vector((self.map_model.bike.xB, self.map_model.bike.yB), gp_on_path)
