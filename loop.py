@@ -20,7 +20,7 @@ from matplotlib import collections as mc
 from matplotlib.path import Path
 from matplotlib.patches import Wedge, PathPatch, Circle
 
-def loop_using_animation(nav, bike, map_model):
+def loop_using_animation(nav, bike, map_model, blit=True):
 	"""This code uses blitting and callbacks to simulate the
 	bike."""
 	figure, axes = plt.figure(), plt.axes(xlim=(-5, 50), ylim=(-5, 20))
@@ -60,6 +60,10 @@ def loop_using_animation(nav, bike, map_model):
 	lookahead_polygon = Circle((bike.xB, bike.yB), 1)
 	axes.add_artist(lookahead_polygon)
 
+	# Create dropped point
+	dropped_polygon = Circle((bike.xB, bike.yB), 1, fc="red")
+	axes.add_artist(dropped_polygon)
+
 	# Create current line highlight
 	current_line = axes.plot([0, 0], [0, 0], "r")[0]
 	axes.add_artist(current_line)
@@ -72,14 +76,14 @@ def loop_using_animation(nav, bike, map_model):
 		canvas.draw()
 		listener_id[0] = canvas.mpl_connect("draw_event", grab_background)
 	def grab_background(event=None):
-		bike_polygon.set_visible(False)
-		lookahead_polygon.set_visible(False)
-		current_line.set_visible(False)
+		transient_polygons = (bike_polygon, lookahead_polygon,
+				      current_line, dropped_polygon)
+		for polygon in transient_polygons:
+			polygon.set_visible(False)
 		safe_draw()
 		background[0] = figure.canvas.copy_from_bbox(figure.bbox)
-		bike_polygon.set_visible(True)
-		lookahead_polygon.set_visible(True)
-		current_line.set_visible(True)
+		for polygon in transient_polygons:
+			polygon.set_visible(True)
 		blit()
 	def blit():
 		figure.canvas.restore_region(background[0])
@@ -115,6 +119,10 @@ def loop_using_animation(nav, bike, map_model):
 		lookahead_polygon.center = nav.lookahead_point
 		axes.draw_artist(lookahead_polygon)
 
+		# Update and redraw dropped point
+		dropped_polygon.center = nav.dropped_point
+		axes.draw_artist(dropped_polygon)
+
 		# Update and redraw highlight for current closest line
 		curr_path_segment = paths[nav.closest_path_index]
 		current_line.set_xdata([curr_path_segment[0][0], curr_path_segment[1][0]])
@@ -125,7 +133,10 @@ def loop_using_animation(nav, bike, map_model):
 		figure_blit(axes.bbox)
 
 	# Start the update & refresh timer
-	figure.canvas.new_timer(interval=0, callbacks=[(full_step, [], {})]).start()
+	if blit:
+		figure.canvas.new_timer(interval=0, callbacks=[(full_step, [], {})]).start()
+	else:
+		FuncAnimation(figure, full_step, frames=xrange(0,200))
 
 	# Display the window with the simulation
 	plt.show()
@@ -136,9 +147,10 @@ if __name__ == '__main__':
 	# waypoints = requestHandler.parse_json(True)
 	#waypoints = [(0,0), (20, 5), (40, 5)]
 	#waypoints = [(0,0), (50, 5)]
-	waypoints = [(0,0), (20, 5), (40, -5), (60, 10), (80, -20), (40, -30), (0,-10)]
+	waypoints = [(0,0), (20, 5), (40, -5), (60, 10), (80, -20), (40, -30), (0,-10), (0, 0)]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	# print "PATHS", new_nav.map_model.paths
 
-	loop_using_animation(new_nav, new_bike, new_map_model)
+	# If we're not on a Mac, use blitting (it's better)
+	loop_using_animation(new_nav, new_bike, new_map_model, sys.platform != "darwin")

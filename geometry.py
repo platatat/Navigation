@@ -69,12 +69,12 @@ def angle_from_path(bike_direction, p1, p2):
 def distance_from_path(point, target_path):
 	""" [distance_from_path] calculates the distance from [point] to [target_path] """
 	# if target_path is None:
-	# 	target_path = self.target_path
+	#	target_path = self.target_path
 	p1 = np.array(target_path[0])
 	v = unit_vector(target_path[0], target_path[1])
 	if v[0] == 0:
 		sign = get_sign(v[1])
-		return  sign*(p1[0] - point[0])
+		return	sign*(p1[0] - point[0])
 	v_perp = np.array([v[1], -1*v[0]])
 	bike_coords = np.array(point)
 	r = p1 - bike_coords
@@ -122,8 +122,13 @@ def threeD_unit_vector(p1, p2):
 def is_between(p1,p2,p3):
 	"""Precondition: points p1, p2, p3 form a line.
 	Return true if p3 is between p1 and p2 on the line"""
-	return (p1[0] <= p3[0]) and (p3[0] <= p2[0])
-	
+	min_x, max_x = p1[0], p2[0]
+	if min_x > max_x:
+
+		# If p1 and p2 are oriented the other way, swap 'em
+		min_x, max_x = max_x, min_x
+	return (min_x <= p3[0]) and (p3[0] <= max_x)
+
 def intersect_circle_path(path, r, c):
 	"""Returns points of intersection between path and circle with radius r and center c"""
 	p1 = path[0]
