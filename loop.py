@@ -60,6 +60,10 @@ def loop_using_animation(nav, bike, map_model):
 	lookahead_polygon = Circle((bike.xB, bike.yB), 1)
 	axes.add_artist(lookahead_polygon)
 
+	# Create current line highlight
+	current_line = axes.plot([0, 0], [0, 0], "r")[0]
+	axes.add_artist(current_line)
+
 	# Set up resizing handlers
 	listener_id = [None]
 	def safe_draw():
@@ -70,10 +74,12 @@ def loop_using_animation(nav, bike, map_model):
 	def grab_background(event=None):
 		bike_polygon.set_visible(False)
 		lookahead_polygon.set_visible(False)
+		current_line.set_visible(False)
 		safe_draw()
 		background[0] = figure.canvas.copy_from_bbox(figure.bbox)
 		bike_polygon.set_visible(True)
 		lookahead_polygon.set_visible(True)
+		current_line.set_visible(True)
 		blit()
 	def blit():
 		figure.canvas.restore_region(background[0])
@@ -83,7 +89,7 @@ def loop_using_animation(nav, bike, map_model):
 
 	# This timer runs simulation steps and draws the results
 	figure_restore = figure.canvas.restore_region
-	get_steering_angle = nav.pure_pursuit
+	get_steering_angle = nav.pure_pursuit_2
 	simulation_step = lambda angle: bike.update(bikeSim.new_state(bike, angle))
 	figure_blit = figure.canvas.blit
 	def full_step():
@@ -109,6 +115,12 @@ def loop_using_animation(nav, bike, map_model):
 		lookahead_polygon.center = nav.lookahead_point
 		axes.draw_artist(lookahead_polygon)
 
+		# Update and redraw highlight for current closest line
+		curr_path_segment = paths[nav.closest_path_index]
+		current_line.set_xdata([curr_path_segment[0][0], curr_path_segment[1][0]])
+		current_line.set_ydata([curr_path_segment[0][1], curr_path_segment[1][1]])
+		axes.draw_artist(current_line)
+
 		# Redraw bike
 		figure_blit(axes.bbox)
 
@@ -124,7 +136,7 @@ if __name__ == '__main__':
 	# waypoints = requestHandler.parse_json(True)
 	#waypoints = [(0,0), (20, 5), (40, 5)]
 	#waypoints = [(0,0), (50, 5)]
-	waypoints = [(0,0), (20, 5), (40, 5), (60, 0), (70, -10)]
+	waypoints = [(0,0), (20, 5), (40, -5), (60, 10), (80, -20), (40, -30), (0,-10)]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	# print "PATHS", new_nav.map_model.paths
