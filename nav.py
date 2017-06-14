@@ -36,7 +36,7 @@ class Nav(object):
 			return self.turn_parallel()
 
 	
-	def original_find_closest_path_(self):
+	def original_find_closest_path(self):
 		""" Finds and returns the closest path to the bike from the list of paths """
 		closest_distance = sys.maxint
 		closest_path = 0
@@ -191,11 +191,12 @@ class Nav(object):
 
 	def controller_direction_to_turn(self):
 		""" pd controller """
-		path = self.map_model.paths[self.find_closest_path()]
+		bike_position = (self.map_model.bike.xB, self.map_model.bike.yB)
+		path = self.map_model.paths[self.original_find_closest_path()]
 		#self.target_path = self.find_closest_path()#QUICK 
 		self.target_path = 0
 
-		print"TARGET PATH IS", self.find_closest_path()
+		print"TARGET PATH IS", self.original_find_closest_path()
 
 		path_vector = geometry.unit_vector(path[0], path[1])
 		bike_vector = self.map_model.bike.vector
