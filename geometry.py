@@ -85,6 +85,12 @@ def line_slope(line):
 	""" Returns: slope of [line] """
 	return ((line[1][1]-line[0][1])/(line[1][0]-line[0][0]))
 
+def slope_intercept(p1,p2):
+	"""Returns [slope, y-intercept] of line given by points p1, p2"""
+	m = float(p1[1]-p2[1]) / (p1[0]-p2[0])
+	b = p1[1] - m*p1[0]
+	return (m,b)
+
 def angle_between_vectors(v1, v2):
 	dot = v1[0]*v2[0] + v1[1]*v2[1]
 	abs1 = math.sqrt(v1[0]**2 + v1[1]**2)
@@ -113,4 +119,22 @@ def threeD_unit_vector(p1, p2):
 	else:
 		return v/np.linalg.norm(v)
 
+def is_between(p1,p2,p3):
+	"""Precondition: points p1, p2, p3 form a line.
+	Return true if p3 is between p1 and p2 on the line"""
+	return (p1[0] <= p3[0]) and (p3[0] <= p2[0])
+	
+def intersect_circle_path(path, r, c):
+	"""Returns points of intersection between path and circle with radius r and center c"""
+	p1 = path[0]
+	p2 = path[1]
+	xc = c[0]
+	yc = c[1]
+	m = slope_intercept(p1, p2)[0]
+	b = slope_intercept(p1, p2)[1]
+	x_roots = np.roots([m**2+1, 2*m*b-2*m*yc-2*xc, xc**2+b**2-2*yc*b+yc**2-r**2])
+	ip1 = (x_roots[0], m*x_roots[0]+b)
+	ip2 = (x_roots[1], m*x_roots[1]+b)
+	return (ip1, ip2)
+	
 
