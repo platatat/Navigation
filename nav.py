@@ -252,7 +252,7 @@ class Nav(object):
 	
 	def pure_pursuit(self):
 		"""Uses lookahead point distance ld from bike to return a steering angle"""
-		ld = 5 #lookahead distance
+		ld = 4 #lookahead distance
 		bike_vector = self.map_model.bike.vector
 		psi = self.map_model.bike.psi #bike direction (angle)
 		opp = math.sin(psi) * ld 
@@ -284,9 +284,8 @@ class Nav(object):
 	def pure_pursuit_waypoint(self):
 		"""Uses next waypoint as lookahead point to return a steering angle"""
 		
-		ld = 2 #lookahead distance
+		ld = 5 #lookahead distance
 		bike_vector = self.map_model.bike.vector
-		psi = self.map_model.bike.psi #bike direction (angle)
 		bike_position = (self.map_model.bike.xB, self.map_model.bike.yB)
 		print "bike position", bike_position
 		path = self.map_model.paths[self.find_closest_path(bike_position)]
@@ -309,3 +308,45 @@ class Nav(object):
 		elif (steerD < -MAX_STEER):
 			steerD = -MAX_STEER
 		return steerD
+	
+	def pure_pursuit_2(self):
+		"""ADD SPEC HERE"""
+		
+		ld = 4
+		bike_vector = self.map_model.bike.vector
+		bike_position = (self.map_model.bike.xB, self.map_model.bike.yB)
+		print "bike position", bike_position
+		path_index = self.find_closest_path(bike_position)
+		path = self.map_model.paths[path_index]
+		start_point_on_path = geometry.nearest_point_on_path(path, bike_position)
+		path_vector = geometry.unit_vector(path[0], path[1])
+		gp_on_path = (start_point_on_path[0] + path_vector[0]*ld, start_point_on_path[1] + path_vector[1]*ld)
+		if not geometry.is_between(path[0], path[1], gp_on_path):
+			dist_past_end = geometry.distance(gp_on_path, path[1])
+			next_path = self.map_model.paths[path_index+1]
+			next_path_vector = geometry.unit_vector(next_path[0],next_path[1])
+			gp_on_path = (next_path[0][0] + next_path_vector[0]*ld, next_path[0][1] + next_path_vector[1]*ld)
+		self.lookahead_point = gp_on_path # Exposed for the visualization code
+		print "bike position", (self.map_model.bike.xB, self.map_model.bike.yB)
+		lookahead_vector = geometry.unit_vector((self.map_model.bike.xB, self.map_model.bike.yB), gp_on_path)
+		print "l vector", lookahead_vector
+		print "bike vector", bike_vector
+		lookahead_angle = geometry.angle_between_vectors(bike_vector, lookahead_vector)
+		lookahead_perp = np.array([-lookahead_vector[1], lookahead_vector[0]])
+		dot = geometry.dot_product(lookahead_perp, bike_vector)
+		lookahead_angle = lookahead_angle * np.sign(dot)
+		print "l angle", lookahead_angle
+		k = 2*math.sin(lookahead_angle)/ld
+		print "k is ", k
+		L = 0.9144
+		steerD = math.atan(k*L)
+		print "steeeerD", steerD
+		if (steerD > MAX_STEER):
+			steerD = MAX_STEER
+		elif (steerD < -MAX_STEER):
+			steerD = -MAX_STEER
+		return steerD
+		
+		
+		
+		
