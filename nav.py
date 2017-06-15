@@ -16,9 +16,19 @@ class Nav(object):
 		""" Nav initializer """
 		self.map_model = map_model
 		self.target_path = 0
-		
-	#def angle
 
+		# Used by loop.py for visualization
+		self.lookahead_point = (0, 0)
+		self.dropped_point = (0, 0)
+
+	def clamp_steer_angle(self, steerD):
+		"""Limits a steer angle to within [-MAX_STEER, +MAX_STEER]"""
+		if (steerD > MAX_STEER):
+			steerD = MAX_STEER
+		elif (steerD < -MAX_STEER):
+			steerD = -MAX_STEER
+
+		return steerD
 
 	def direction_to_turn(self):
 		""" Returns: the steer command """
@@ -331,3 +341,107 @@ class Nav(object):
 		elif (steerD < -MAX_STEER):
 			steerD = -MAX_STEER
 		return steerD
+
+	def pid_with_cutting(self):
+		"""Two parts here: a regular PID controller, and a component
+		that detects when a turn is coming up so we can start turning
+		early."""
+
+		bike = self.map_model.bike
+		bike_pos = (bike.xB, bike.yB)
+
+		# Determine the path segment closest to the bike
+		self.closest_path_index = self.find_closest_path(bike_pos)
+		path = self.map_model.paths[self.closest_path_index]
+
+		# Get a unit vector perpendicular to the path
+		path_vector = (path[1][0] - path[0][0], path[1][1] - path[0][1])
+		path_perp_vector = np.array((-path_vector[1], path_vector[0]))
+		path_perp_unit_vector = path_perp_vector / np.linalg.norm(path_perp_vector)
+
+		# Project vector from path[0] to bike onto the path perp unit vector to get signed distance
+		# (positive when the bike is to the left of the path)
+		path_to_bike_vector = np.array((bike.xB - path[0][0], bike.yB - path[0][1]))
+		signed_dist = np.dot(path_perp_unit_vector, path_to_bike_vector)
+
+		# Get angle between this path segment and the x-axis
+		path_angle = math.atan2(path_vector[1], path_vector[0])
+
+		## Detect possible upcoming turns
+
+		# Project bike-to-path-endpoint vector onto path unit vector
+		path_endpoint_to_bike_vector = np.array((path[1][0] - bike.xB, path[1][1] - bike.yB))
+		path_unit_vector = np.array(path_vector) / np.linalg.norm(path_vector)
+		dist_until_endpoint = np.dot(path_endpoint_to_bike_vector, path_unit_vector)
+
+		# Determine whether we need to start turning in advance
+		if dist_until_endpoint < TURN_LOOKAHEAD_DIST:
+
+			# Find the angle between this segment and the next one
+			next_segment_index = (self.closest_path_index + 1) % len(self.map_model.paths)
+			next_segment = self.map_model.paths[next_segment_index]
+			next_segment_vector = (next_segment[1][0] - next_segment[0][0], next_segment[1][1] - next_segment[0][1])
+
+			# Calculate angle between next segment and x-axis
+			next_segment_angle = math.atan2(next_segment_vector[1], next_segment_vector[0])
+			segment_angle_diff = next_segment_angle - path_angle
+
+			# If the path is right-to-left (and perhaps other cases), fix range of angle
+			if segment_angle_diff > math.pi:
+				segment_angle_diff -= 2 * math.pi
+			next_turn_contribution = -segment_angle_diff * NEXT_TURN_GAIN
+		else:
+			next_turn_contribution = 0
+
+		# Force bike angle between -pi and pi
+		corrected_bike_psi = bike.psi
+		while corrected_bike_psi > math.pi: corrected_bike_psi -= math.pi
+		while corrected_bike_psi < -math.pi: corrected_bike_psi += math.pi
+
+		# Get angle between bike and path
+		angle_diff = corrected_bike_psi - path_angle
+
+		# Correct for taking the wrong perpendicular vector
+		# (if the path is pointing right-to-left)
+		if abs(angle_diff) > math.pi / 2:
+			angle_diff -= math.copysign(math.pi, angle_diff)
+
+		distance_contribution = PID_DIST_GAIN * MAX_STEER * math.tanh(signed_dist)
+		angle_contribution = PID_ANGLE_GAIN * angle_diff
+
+		describe_angle = lambda angle: "right" if angle > 0 else "left"
+		print("dist = {:.4f} ({})\tangle = {:.4f} ({})\tnext_turn = {:.4f} ({})"
+		      .format(distance_contribution, describe_angle(distance_contribution),
+			      angle_contribution, describe_angle(angle_contribution),
+			      next_turn_contribution, describe_angle(next_turn_contribution)))
+
+		# The original purpose of this if statement was to detect the case where the bike was turning
+		# towards the path and it was going to end up going perpendicular - in this case we needed to
+		# amp up the angle-fixing and de-emphasize the distance fixing.
+		if abs(angle_diff) > MAX_ACCEPTABLE_ANGLE_DIFF:
+			if False:#abs(angle_diff) > math.pi / 4.0:
+				distance_contribution /= 2.5
+				angle_contribution *= 2
+			else:
+				distance_contribution /= 1.5
+
+		steerD = distance_contribution + angle_contribution + next_turn_contribution
+
+		# Original purpose was for when we clamped distance_contribution and angle_contribution,
+		# sometimes they would be the same magnitude but oppositie signs, so we needed to fix
+		# that by breaking the tie. Because the bike would normally be going towards the path
+		# in this case, we could just break the tie in favor of distance_contribution.
+		if False:#steerD < 0.0001 and distance_contribution != 0 and abs(angle_diff) < MAX_ACCEPTABLE_ANGLE_DIFF:
+
+			# Distance and angle are canceling eachother out, so do distance-only
+			print("Breaking tie in favor of distance")
+			return distance_contribution
+
+		return self.clamp_steer_angle(steerD)
+
+	def get_steering_angle(self):
+		"""Calls another function to calculate the steering angle.
+		This function is part of the external interface of this class.
+		All external users of this class should call this method
+		instead of the other steering-angle-calculation methods."""
+		return self.pid_with_cutting()

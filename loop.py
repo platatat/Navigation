@@ -20,10 +20,10 @@ from matplotlib import collections as mc
 from matplotlib.path import Path
 from matplotlib.patches import Wedge, PathPatch, Circle
 
-def loop_using_animation(nav, bike, map_model, blit=True):
+def loop_using_animation(nav, bike, map_model, blitting=True):
 	"""This code uses blitting and callbacks to simulate the
 	bike."""
-	figure, axes = plt.figure(), plt.axes(xlim=(-5, 50), ylim=(-5, 20))
+	figure, axes = plt.figure(), plt.axes(xlim=(-5, 105), ylim=(-50, 20))
 
 	# Square aspect ratio for the axes
 	axes.set_aspect("equal")
@@ -93,7 +93,7 @@ def loop_using_animation(nav, bike, map_model, blit=True):
 
 	# This timer runs simulation steps and draws the results
 	figure_restore = figure.canvas.restore_region
-	get_steering_angle = nav.pure_pursuit_2
+	get_steering_angle = nav.get_steering_angle
 	simulation_step = lambda angle: bike.update(bikeSim.new_state(bike, angle))
 	figure_blit = figure.canvas.blit
 	def full_step():
@@ -117,11 +117,11 @@ def loop_using_animation(nav, bike, map_model, blit=True):
 
 		# Update and redraw lookahead point
 		lookahead_polygon.center = nav.lookahead_point
-		axes.draw_artist(lookahead_polygon)
+		#axes.draw_artist(lookahead_polygon)
 
 		# Update and redraw dropped point
 		dropped_polygon.center = nav.dropped_point
-		axes.draw_artist(dropped_polygon)
+		#axes.draw_artist(dropped_polygon)
 
 		# Update and redraw highlight for current closest line
 		curr_path_segment = paths[nav.closest_path_index]
@@ -133,8 +133,8 @@ def loop_using_animation(nav, bike, map_model, blit=True):
 		figure_blit(axes.bbox)
 
 	# Start the update & refresh timer
-	if blit:
-		figure.canvas.new_timer(interval=0, callbacks=[(full_step, [], {})]).start()
+	if blitting:
+		figure.canvas.new_timer(interval=ANIM_INTERVAL, callbacks=[(full_step, [], {})]).start()
 	else:
 		FuncAnimation(figure, full_step, frames=xrange(0,200))
 
@@ -147,7 +147,8 @@ if __name__ == '__main__':
 	# waypoints = requestHandler.parse_json(True)
 	#waypoints = [(0,0), (20, 5), (40, 5)]
 	#waypoints = [(0,0), (50, 5)]
-	waypoints = [(0,0), (20, 5), (40, -5), (60, 10), (80, -20), (40, -30), (0,-10), (0, 0)]
+	waypoints = [(0,0), (20, 5), (40, -5), (60, 10), (100, -20), (40, -50), (0,-10), (0, 0)]
+	# waypoints = [(40, 0), (20, -10), (0, 0)]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	# print "PATHS", new_nav.map_model.paths
