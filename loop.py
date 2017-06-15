@@ -20,6 +20,56 @@ from matplotlib import collections as mc
 from matplotlib.path import Path
 from matplotlib.patches import Wedge, PathPatch, Circle
 
+def loop_using_patches(nav, bike, map_model):
+	"""This function uses adding and removing patches to animate the bike."""
+	plt.ion() # enables interactive plotting
+	paths = map_model.paths
+	fig = plt.figure()
+	ax = plt.axes(xlim=(0, 20), ylim=(0, 20))
+	lc = mc.LineCollection(paths, linewidths=2, color = "blue")
+	ax.add_collection(lc)
+	plt.show()
+
+	# For plotting the bicycle
+	axes = plt.gca()
+
+	# Holds past locations of the bike, for plotting
+	bike_trajectory = [(bike.xB, bike.yB)]
+
+	# We need to keep this around to clear it after path updates
+	path_patch = None
+
+	prev_bike_patch = None
+	prev_lookahead_patch = None
+
+	# Main animation loop
+	while True:
+
+		if path_patch:
+			path_patch.remove()
+		path_patch = PathPatch(Path(bike_trajectory), fill=False,
+				       linewidth=2)
+		axes.add_patch(path_patch)
+
+	# Plot the bike as a wedge pointing in the direction bike.psi
+		if prev_bike_patch:
+			prev_bike_patch.remove()
+		bike_heading = bike.psi * (180/math.pi) # Converted to degrees
+		wedge_angle = 45 # The angle covered by the wedge
+		bike_polygon = Wedge((bike.xB, bike.yB), 0.3,
+				     bike_heading - wedge_angle / 2 + 180,
+				     bike_heading + wedge_angle / 2 + 180, fc="black")
+		axes.add_patch(bike_polygon)
+		prev_bike_patch = bike_polygon
+		plt.show()
+		plt.pause(0.00000000000001)
+
+		bike_trajectory.append((bike.xB, bike.yB))
+
+		steerD = nav.get_steering_angle()
+		# if new state has new target path then recalculate delta
+		bike.update(bikeSim.new_state(bike, steerD))
+
 def loop_using_animation(nav, bike, map_model, blitting=True):
 	"""This code uses blitting and callbacks to simulate the
 	bike."""
@@ -154,4 +204,7 @@ if __name__ == '__main__':
 	# print "PATHS", new_nav.map_model.paths
 
 	# If we're not on a Mac, use blitting (it's better)
-	loop_using_animation(new_nav, new_bike, new_map_model, sys.platform != "darwin")
+	if sys.platform == "darwin":
+		loop_using_patches(new_nav, new_bike, new_map_model)
+	else:
+		loop_using_animation(new_nav, new_bike, new_map_model)
