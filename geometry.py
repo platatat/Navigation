@@ -95,11 +95,6 @@ def angle_between_vectors(v1, v2):
 	dot = v1[0]*v2[0] + v1[1]*v2[1]
 	abs1 = math.sqrt(v1[0]**2 + v1[1]**2)
 	abs2 = math.sqrt(v2[0]**2 + v2[1]**2)
-	# added by josh
-	if (dot/(abs1*abs2) > 1):
-		return math.acos(1)
-	elif (dot/(abs1*abs2) < -1):
-		return math.acos(-1)
 	return math.acos(dot/(abs1*abs2))
 
 def angle_between_two_lines(line1, line2):

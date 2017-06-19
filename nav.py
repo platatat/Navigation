@@ -21,12 +21,22 @@ class Nav(object):
 		self.lookahead_point = (0, 0)
 		self.dropped_point = (0, 0)
 
+		# State for turn lookaheads
+		self.first_segment = True
+
+		num_paths = len(self.map_model.paths)
+
 		# Precompute when we need to turn
-		self.lookahead_distances = [0] * len(self.map_model.paths)
+		self.lookahead_distances = [0] * num_paths
+		self.lookahead_angles = [0] * num_paths # Holds angles between segments
+		self.lookahead_factors = [0] * num_paths
 		for index, curr_segment in enumerate(self.map_model.paths):
+
+			# Compute the angle the current segment makes with the x-axis
 			curr_vector = (curr_segment[1][0] - curr_segment[0][0], curr_segment[1][1] - curr_segment[0][1])
 			curr_angle = math.atan2(curr_vector[1], curr_vector[0])
 
+			# Compute the angle the next segment makes with the x-axis
 			next_index = (index + 1) % len(self.map_model.paths)
 			next_segment = self.map_model.paths[next_index]
 			next_vector = (next_segment[1][0] - next_segment[0][0], next_segment[1][1] - next_segment[0][1])
@@ -35,12 +45,22 @@ class Nav(object):
 			# Find the angle between the current path segment and the next path segment
 			angle_diff = next_angle - curr_angle
 
-			# If the path is right-to-left (and perhaps other cases), fix range of angle
-			if angle_diff > math.pi:
-				angle_diff -= 2 * math.pi
+			# Fix range of angle (this happens if the path is right-to-left)
+			if abs(angle_diff) > math.pi:
+				angle_diff -= math.copysign(2 * math.pi, angle_diff)
 
-			# A steeper angle means we need to start turning sooner
-			curr_lookahead = BASE_LOOKAHEAD + abs(angle_diff) * LOOKAHEAD_ANGLE_GAIN
+			print("Segment {} to segment {}: {} degrees".format(index, index + 1 % num_paths, angle_diff * RAD_TO_DEG))
+			self.lookahead_angles[index] = angle_diff
+
+			# If the turn angle is less than 90 degrees, use the sin-based formula
+			angle_diff = abs(angle_diff)
+			curr_factor = 1
+			if angle_diff < math.pi / 2:
+				curr_factor = math.sin(angle_diff / 2)
+			else:
+				curr_factor = 1 / math.tan((math.pi - angle_diff) / 2)
+			self.lookahead_factors[index] = curr_factor
+			curr_lookahead = MIN_TURN_RADIUS * curr_factor
 			print("{} => {}".format(abs(angle_diff) * RAD_TO_DEG, curr_lookahead))
 			self.lookahead_distances[index] = curr_lookahead
 
@@ -404,14 +424,18 @@ class Nav(object):
 			angle_diff -= math.copysign(math.pi, angle_diff)
 
 		distance_contribution = PID_DIST_GAIN * MAX_STEER * math.tanh(signed_dist)
-		angle_contribution = PID_ANGLE_GAIN * angle_diff
+		angle_contribution = (1.5 if (abs(signed_dist) > 1.5) else 2) * angle_diff
 		next_turn_contribution = NEXT_TURN_GAIN * self.create_lookahead_correction(path, bike)
+
+		if next_turn_contribution:
+			distance_contribution = 0
+			angle_contribution = 0
 
 		describe_angle = lambda angle: "right" if angle > 0 else "left"
 		print("dist = {:.4f} ({})\tangle = {:.4f} ({})\tnext_turn = {:.4f} ({})"
 		      .format(distance_contribution, describe_angle(distance_contribution),
 			      angle_contribution, describe_angle(angle_contribution),
-			      next_turn_contribution, describe_angle(next_turn_contribution)))
+		      next_turn_contribution, describe_angle(next_turn_contribution)))
 
 		# The original purpose of this if statement was to detect the case where the bike was turning
 		# towards the path and it was going to end up going perpendicular - in this case we needed to
@@ -424,20 +448,31 @@ class Nav(object):
 				distance_contribution /= 1.5
 
 		steerD = distance_contribution + angle_contribution + next_turn_contribution
-
 		return self.clamp_steer_angle(steerD)
 
 	def create_lookahead_correction(self, current_path, bike):
+
 		"""Looks at the path ahead and returns a steering angle correction."""
 
-		# Project bike-to-path-endpoint vector onto path unit vector
+		# Project bike-to-path-endpoint and bike-to-path-start vectors onto path unit vector
+		path_start_to_bike_vector =  np.array((current_path[0][0] - bike.xB, current_path[0][1] - bike.yB))
 		path_endpoint_to_bike_vector = np.array((current_path[1][0] - bike.xB, current_path[1][1] - bike.yB))
 		path_vector = (current_path[1][0] - current_path[0][0], current_path[1][1] - current_path[0][1])
 		path_unit_vector = np.array(path_vector) / np.linalg.norm(path_vector)
+		dist_from_start = -np.dot(path_start_to_bike_vector, path_unit_vector)
 		dist_until_endpoint = np.dot(path_endpoint_to_bike_vector, path_unit_vector)
 
-		# Determine whether we need to start turning in advance
-		lookahead_distance = self.lookahead_distances[self.closest_path_index]
+		# Calculate angle wrt x-axis of current path segment
+		path_angle = math.atan2(path_vector[1], path_vector[0])
+
+		lookahead_factor = self.lookahead_factors[self.closest_path_index]
+		curr_turn_radius = (0.91 * math.cos(bike.phi)) / (MAX_STEER * math.cos(0.4))
+		lookahead_distance = self.lookahead_distances[self.closest_path_index]#(curr_turn_radius * lookahead_factor + 1) * 2
+		print("bike.phi = {} deg, curr_turn_radius = {} -> lookahead distance: {}".format(bike.phi * RAD_TO_DEG, curr_turn_radius, lookahead_distance))
+		prev_segment_index = (self.closest_path_index - 1) % len(self.lookahead_distances)
+		prev_lookahead_distance = self.lookahead_distances[prev_segment_index]
+		#print("{} vs {}".format(dist_until_endpoint, lookahead_distance))
+		print("[prev] {} from start, prev lookahead was {}".format(dist_from_start, prev_lookahead_distance))
 		if dist_until_endpoint < lookahead_distance:
 
 			# Find the angle between this segment and the next one
@@ -447,13 +482,26 @@ class Nav(object):
 
 			# Calculate angle between next segment and x-axis
 			next_segment_angle = math.atan2(next_segment_vector[1], next_segment_vector[0])
-			path_angle = math.atan2(path_vector[1], path_vector[0])
 			segment_angle_diff = next_segment_angle - path_angle
 
 			# If the path is right-to-left (and perhaps other cases), fix range of angle
-			if segment_angle_diff > math.pi:
-				segment_angle_diff -= 2 * math.pi
-			return -segment_angle_diff * NEXT_TURN_GAIN
+			if abs(segment_angle_diff) > math.pi:
+				segment_angle_diff -= math.copysign(2 * math.pi, segment_angle_diff)
+			return math.copysign(MAX_STEER, -segment_angle_diff)#-segment_angle_diff * NEXT_TURN_GAIN
+		elif not self.first_segment and dist_from_start < prev_lookahead_distance:
+			
+			# Find the angle between this segment and the previous one
+			prev_segment = self.map_model.paths[prev_segment_index]
+			prev_segment_vector = (prev_segment[1][0] - prev_segment[0][0], prev_segment[1][1] - prev_segment[0][1])
+
+			prev_segment_angle = math.atan2(prev_segment_vector[1], prev_segment_vector[0])
+			prev_segment_angle_diff = prev_segment_angle - path_angle
+
+			# If the path is right-to-left (and perhaps other cases), fix range of angle
+			if abs(prev_segment_angle_diff) > math.pi:
+				prev_segment_angle_diff -= math.copysign(2 * math.pi, prev_segment_angle_diff)
+
+			return math.copysign(MAX_STEER, prev_segment_angle_diff)
 		else:
 			return 0
 
@@ -470,6 +518,11 @@ class Nav(object):
 	def quintic(self):
 		bike = self.map_model.bike
 		bike_pos = (bike.xB, bike.yB)
+
+		# The quintic demands three parameters: distance error, heading
+		# error, and curvature error. We could calculate curvature error
+		# with a queue and a table but nah it seems to be doing fine
+		# anyway.
 
 		# Determine the path segment closest to the bike
 		self.closest_path_index = self.find_closest_path(bike_pos)
@@ -514,4 +567,12 @@ class Nav(object):
 		This function is part of the external interface of this class.
 		All external users of this class should call this method
 		instead of the other steering-angle-calculation methods."""
-		return self.quintic()
+
+		# This code keeps the self.first_segment variable updated,
+		# which is used by the create_lookahead_correction function.
+		# It's not in an individual algo function because multiple
+		# algos use create_lookahead_correction.
+		#if self.first_segment and getattr(self, "closest_path_index", 1):
+		#	self.first_segment = False
+
+		return self.pid_with_cutting()

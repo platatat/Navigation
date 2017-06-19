@@ -25,7 +25,7 @@ def loop_using_patches(nav, bike, map_model):
 	plt.ion() # enables interactive plotting
 	paths = map_model.paths
 	fig = plt.figure()
-	ax = plt.axes(xlim=(0, 20), ylim=(0, 20))
+	ax = plt.axes(**find_display_bounds(map_model.waypoints))
 	lc = mc.LineCollection(paths, linewidths=2, color = "blue")
 	ax.add_collection(lc)
 	plt.show()
@@ -73,7 +73,7 @@ def loop_using_patches(nav, bike, map_model):
 def loop_using_animation(nav, bike, map_model, blitting=True):
 	"""This code uses blitting and callbacks to simulate the
 	bike."""
-	figure, axes = plt.figure(), plt.axes(xlim=(-5, 105), ylim=(-50, 20))
+	figure, axes = plt.figure(), plt.axes(**find_display_bounds(map_model.waypoints))
 
 	# Square aspect ratio for the axes
 	axes.set_aspect("equal")
@@ -191,20 +191,44 @@ def loop_using_animation(nav, bike, map_model, blitting=True):
 	# Display the window with the simulation
 	plt.show()
 
+def find_display_bounds(waypoints):
+	"""Given a set of waypoints, return {xlim, ylim} that can fit them."""
+	xlim = [99999, -99999] # min, max
+	ylim = [99999, -99999] # min, max
+	padding = 5
+	for waypoint in waypoints:
+		if waypoint[0] < xlim[0]:
+			xlim[0] = waypoint[0]
+		elif waypoint[0] > xlim[1]:
+			xlim[1] = waypoint[0]
+
+		if waypoint[1] < ylim[0]:
+			ylim[0] = waypoint[1]
+		elif waypoint[1] > ylim[1]:
+			ylim[1] = waypoint[1]
+	xlim, ylim = (xlim[0] - padding, xlim[1] + padding), (ylim[0] - padding, ylim[1] + padding)
+	return {"xlim": xlim, "ylim": ylim}
 
 if __name__ == '__main__':
-	new_bike = bikeState.Bike(0, 0, 0.1, 0, math.pi/6.0, 0, 3.57)
+	new_bike = bikeState.Bike(0, 0, 0.1, 0, 0, 0, 3.57)
 	# waypoints = requestHandler.parse_json(True)
 	#waypoints = [(0,0), (20, 5), (40, 5)]
-	#waypoints = [(0,0), (50, 5)]
-	waypoints = [(0,0), (20, 5), (40, -5), (60, 10), (100, -20), (40, -50), (0,-10), (0, 0)]
-	# waypoints = [(40, 0), (20, -10), (0, 0)]
+	#waypoints = [(0,0), (50, 0)]
+	#waypoints = [(0,0), (20, 5), (40, -5), (60, 10), (100, -20), (40, -50), (0,-10), (0, 0)]
+	#waypoints = [(40, 0), (20, -10), (0, 0)]
+	#waypoints = [(0,0), (50, 0), (50, 50), (0, 50), (0,0)]
+	#waypoints = [(0, 0), (10, 0), (20, 5), (25, 15), (12, 20), (0, 15), (0, 0)]
+	waypoints = [(0, 0), (20, 0), (40, 10), (50, 30), (24, 40), (0, 30), (0, 0)]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	# print "PATHS", new_nav.map_model.paths
 
+	###########################
+	# WAIT FOR USER TO CONFIRM SO WE CAN SEE THE NAV INIT OUTPUT
+	raw_input("Press ENTER to continue")	
+
 	# If we're not on a Mac, use blitting (it's better)
-	if sys.platform == "darwin":
+	if False:#sys.platform == "darwin":
 		loop_using_patches(new_nav, new_bike, new_map_model)
 	else:
 		loop_using_animation(new_nav, new_bike, new_map_model)
