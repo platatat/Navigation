@@ -1,9 +1,4 @@
 import sys
-if sys.platform == "darwin":
-	# Mac
-	import matplotlib
-	matplotlib.use('TkAgg')
-
 import nav
 import mapModel
 import math
@@ -20,55 +15,10 @@ from matplotlib import collections as mc
 from matplotlib.path import Path
 from matplotlib.patches import Wedge, PathPatch, Circle
 
-def loop_using_patches(nav, bike, map_model):
-	"""This function uses adding and removing patches to animate the bike."""
-	plt.ion() # enables interactive plotting
-	paths = map_model.paths
-	fig = plt.figure()
-	ax = plt.axes(**find_display_bounds(map_model.waypoints))
-	lc = mc.LineCollection(paths, linewidths=2, color = "blue")
-	ax.add_collection(lc)
-	plt.show()
+import pyqtgraph as pg
+from pyqtgraph.Qt import QtGui, QtCore
 
-	# For plotting the bicycle
-	axes = plt.gca()
-
-	# Holds past locations of the bike, for plotting
-	bike_trajectory = [(bike.xB, bike.yB)]
-
-	# We need to keep this around to clear it after path updates
-	path_patch = None
-
-	prev_bike_patch = None
-	prev_lookahead_patch = None
-
-	# Main animation loop
-	while True:
-
-		if path_patch:
-			path_patch.remove()
-		path_patch = PathPatch(Path(bike_trajectory), fill=False,
-				       linewidth=2)
-		axes.add_patch(path_patch)
-
-	# Plot the bike as a wedge pointing in the direction bike.psi
-		if prev_bike_patch:
-			prev_bike_patch.remove()
-		bike_heading = bike.psi * (180/math.pi) # Converted to degrees
-		wedge_angle = 45 # The angle covered by the wedge
-		bike_polygon = Wedge((bike.xB, bike.yB), 0.3,
-				     bike_heading - wedge_angle / 2 + 180,
-				     bike_heading + wedge_angle / 2 + 180, fc="black")
-		axes.add_patch(bike_polygon)
-		prev_bike_patch = bike_polygon
-		plt.show()
-		plt.pause(0.00000000000001)
-
-		bike_trajectory.append((bike.xB, bike.yB))
-
-		steerD = nav.get_steering_angle()
-		# if new state has new target path then recalculate delta
-		bike.update(bikeSim.new_state(bike, steerD))
+import numpy as np
 
 def loop_using_animation(nav, bike, map_model, blitting=True):
 	"""This code uses blitting and callbacks to simulate the
@@ -191,6 +141,62 @@ def loop_using_animation(nav, bike, map_model, blitting=True):
 	# Display the window with the simulation
 	plt.show()
 
+def loop_experimental(nav, bike, map_model):
+	traces = [dict()]
+	qt_app = QtGui.QApplication([])
+	qt_win = pg.GraphicsWindow(title="Basic plotting examples")
+	qt_win.resize(800, 600)
+	qt_win.setWindowTitle("Testing!")
+	#pg.setConfigOptions(antialias=True)
+	#qt_canvas = [qt_win.addPlot()]
+
+	# Stores every item in the "trajectory" plot
+	plot_items = [dict()]
+
+	# This ViewBox will hold the bike and trajectory
+	viewbox = qt_win.addViewBox(col=0, row=1)
+	bikeItem = QtGui.QGraphicsRectItem(5, 5, 1, 1)
+	plot_items[0]["bike"] = bikeItem
+	bikeItem.setPen(pg.mkPen(None))
+	bikeItem.setBrush(pg.mkBrush('r'))
+	viewbox.addItem(bikeItem)
+
+	paths = map_model.paths
+	traj_path = QtGui.QPainterPath()
+	traj_path.moveTo(paths[0][0][0], paths[0][0][1])
+	for each_segment in paths:
+		traj_path.lineTo(*each_segment[1])
+	traj_path_item = QtGui.QGraphicsPathItem(traj_path)
+	traj_path_item.setPen(pg.mkPen('g'))
+	traj_path_item.setBrush(pg.mkBrush(None))
+	viewbox.addItem(traj_path_item)
+
+	def trace(name, xs, ys):
+		if name in traces[0]:
+			traces[0][name].setData(xs, ys)
+		else:
+			traces[0][name] = qt_canvas[0].plot(pen="y")
+
+	i = [0]
+	get_steering_angle = nav.get_steering_angle
+	simulation_step = lambda angle: bike.update(bikeSim.new_state(bike, angle))
+	def update():
+		simulation_step(get_steering_angle())
+		#t = np.arange(0, 3.0, 0.01)
+		#our_i = i[0]
+		#s = np.sin(2 * math.pi * t + our_i)
+		#c = np.cos(2 * math.pi * t + our_i)
+		#trace("sin", t, s)
+		#trace("cos", t, c)
+		plot_items[0]["bike"].setRect(bike.xB, bike.yB, 5, 10)
+		#i[0] = i[0] + 0.1
+	
+	timer = QtCore.QTimer()
+	timer.timeout.connect(update)
+	timer.start(1)
+
+	QtGui.QApplication.instance().exec_()
+
 def find_display_bounds(waypoints):
 	"""Given a set of waypoints, return {xlim, ylim} that can fit them."""
 	xlim = [99999, -99999] # min, max
@@ -223,12 +229,4 @@ if __name__ == '__main__':
 	new_nav = nav.Nav(new_map_model)
 	# print "PATHS", new_nav.map_model.paths
 
-	###########################
-	# WAIT FOR USER TO CONFIRM SO WE CAN SEE THE NAV INIT OUTPUT
-	raw_input("Press ENTER to continue")	
-
-	# If we're not on a Mac, use blitting (it's better)
-	if False:#sys.platform == "darwin":
-		loop_using_patches(new_nav, new_bike, new_map_model)
-	else:
-		loop_using_animation(new_nav, new_bike, new_map_model)
+	loop_experimental(new_nav, new_bike, new_map_model)
