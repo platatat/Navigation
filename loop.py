@@ -8,13 +8,6 @@ from constants import *
 import geometry
 import requestHandler
 
-import matplotlib
-from matplotlib import pyplot as plt
-from matplotlib import animation
-from matplotlib import collections as mc
-from matplotlib.path import Path
-from matplotlib.patches import Wedge, PathPatch, Circle
-
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 
