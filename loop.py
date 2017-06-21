@@ -92,6 +92,15 @@ def loop_pyqtgraph(nav, bike, map_model):
 	traj_timer.timeout.connect(traj_update)
 	traj_timer.start(100)
 
+	# This bit simulates the algo receiving delayed information
+	delayed_bike = bikeState.Bike(0, 0, 0, 0, 0, 0, 0)
+	nav.map_model.bike = delayed_bike
+	def delayed_update():
+		delayed_bike.update(bike)
+	delayed_timer = QtCore.QTimer()
+	delayed_timer.timeout.connect(delayed_update)
+	delayed_timer.start(1)
+
 	get_steering_angle = nav.get_steering_angle
 	simulation_step = lambda angle: bike.update(bikeSim.new_state(bike, angle))
 	def update():
