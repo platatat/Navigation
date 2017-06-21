@@ -59,6 +59,11 @@ def loop_pyqtgraph(nav, bike, map_model):
 	bikeItem.setBrush(pg.mkBrush('r'))
 	viewbox.addItem(bikeItem)
 
+	# Graphics helper
+	def setPenWidth(pen, width):
+		pen.setWidth(width)
+		return pen
+
 	# Make an item for the static (given) path
 	paths = map_model.paths
 	static_path = QtGui.QPainterPath()
@@ -66,7 +71,7 @@ def loop_pyqtgraph(nav, bike, map_model):
 	for each_segment in paths:
 		static_path.lineTo(*each_segment[1])
 	static_path_item = QtGui.QGraphicsPathItem(static_path)
-	static_path_item.setPen(pg.mkPen('g'))
+	static_path_item.setPen(setPenWidth(pg.mkPen('g'), 2))
 	static_path_item.setBrush(pg.mkBrush(None))
 	viewbox.addItem(static_path_item)
 
@@ -75,7 +80,7 @@ def loop_pyqtgraph(nav, bike, map_model):
 	traj_path.moveTo(bike.xB, bike.yB)
 	plot_items[0]["traj"] = traj_path
 	traj_path_item = QtGui.QGraphicsPathItem(traj_path)
-	traj_path_item.setPen(pg.mkPen('b'))
+	traj_path_item.setPen(setPenWidth(pg.mkPen('b'), 2))
 	traj_path_item.setBrush(pg.mkBrush(None))
 	plot_items[0]["trajitem"] = traj_path_item
 	viewbox.addItem(traj_path_item)
@@ -98,14 +103,6 @@ def loop_pyqtgraph(nav, bike, map_model):
 		new_polygon = QtGui.QPolygonF()
 		for each_point in ((x1, y1), (x2, y2), (x3, y3)): new_polygon.append(QtCore.QPointF(*each_point))
 		plot_items[0]["bikeitem"].setPolygon(new_polygon)
-		#plot_items[0]["bike"][0].setX(bike.xB)
-		#plot_items[0]["bike"][0].setY(bike.yB)
-		#plot_items[0]["bike"][1].setX(
-		#plot_items[0]["bike"][1].setX(bike.xB + math.sin(bike.psi - math.pi / 12))
-		#plot_items[0]["bike"][2].setX(bike.xB + math.cos(bike.psi + math.pi / 12))
-		#plot_items[0]["bike"][2].setX(bike.xB + math.sin(bike.psi + math.pi / 12))
-		#plot_items[0]["bikeitem"].setPolygon(plot_items[0]["bike"])
-		#plot_items[0]["bike"].setRect(bike.xB, bike.yB, 1, 1)
 	
 	anim_timer = QtCore.QTimer()
 	anim_timer.timeout.connect(update)
