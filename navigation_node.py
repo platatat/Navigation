@@ -110,7 +110,7 @@ def talker():
         #else:
         if True:
             #rospy.loginfo((new_bike.xB, new_bike.yB, new_bike.psi, new_nav.direction_to_turn()))
-            pub.publish(new_nav.controller_direction_to_turn())
+            pub.publish(new_nav.get_steering_angle())
         rate.sleep()
 
 if __name__ == '__main__':

@@ -572,11 +572,4 @@ class Nav(object):
 		All external users of this class should call this method
 		instead of the other steering-angle-calculation methods."""
 
-		# This code keeps the self.first_segment variable updated,
-		# which is used by the create_lookahead_correction function.
-		# It's not in an individual algo function because multiple
-		# algos use create_lookahead_correction.
-		#if self.first_segment and getattr(self, "closest_path_index", 1):
-		#	self.first_segment = False
-
 		return self.pid_with_cutting()
