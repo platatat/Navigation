@@ -73,7 +73,7 @@ class Nav(object):
 
 		return steerD
 
-	def pid_with_cutting(self):
+	def pid_controller(self):
 		"""Two parts here: a regular PID controller, and a component
 		that detects when a turn is coming up so we can start turning
 		early."""
@@ -266,4 +266,4 @@ class Nav(object):
 		All external users of this class should call this method
 		instead of the other steering-angle-calculation methods."""
 
-		return self.pid_with_cutting()
+		return self.pid_controller()
