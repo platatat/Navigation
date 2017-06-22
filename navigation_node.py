@@ -32,17 +32,29 @@ def update_bike_state(data):
     # new_bike.v = d[] #gps or 6
     # new_bike.turning_r = d[7] LOOKEDUP
 
-
+# This variable stores the old set of GPS data
+old_gps_set = ()
 def update_bike_xy(data):
+    """Takes the incoming data from the GPS and updates our state with it."""
+
+    # Only update the state if the incoming data is different from the last set
+    # of GPS data we received
+
+    # These are the four variables we use below
+    curr_gps_set = (data.data[0], data.data[1], data.data[7], data.data[8])
+    if curr_gps_set == old_gps_set:
+        rospy.loginfo("Rejecting data from gps")
+        return
+    old_gps_set = curr_gps_set
 
 #    if data.data[0] == 0 and data.data[1] == 0:
 #       not_ready = True
 #    else:
     if (True):
         not_ready = False
-        lat = data.data[0] # In degrees 
-        lon = data.data[1]
-        psi = data.data[7] # This needs to be in rads
+        latitude = data.data[0] # In degrees
+        longitude = data.data[1]
+        psi = data.data[7] # psi = heading in radians
         velocity = data.data[8]
 
     #if data.data[0] == 0 and data.data[1] == 0:
@@ -56,7 +68,7 @@ def update_bike_xy(data):
             #lon = data.data[1]
             #psi = data.data[7] # This needs to be in rads
             #velocity = data.data[8]
-        xy_point = requestHandler.math_convert(lat, lon)
+        xy_point = requestHandler.math_convert(latitude, longitude)
 
 
             #d_psi = float(psi - old_psi)/old_time_since_last
