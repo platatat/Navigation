@@ -73,6 +73,18 @@ class Nav(object):
 
 		return steerD
 
+	def find_closest_path(self, point):
+		""" Finds and returns the closest path to the given point from the list of paths """
+		closest_distance = sys.maxint
+		closest_path = 0
+		for path_index, path in enumerate(self.map_model.paths):
+			nearest_point = geometry.nearest_point_on_path(path, point)
+			distance_to_bike = geometry.distance(nearest_point, point)
+			if (closest_distance > distance_to_bike):
+				closest_distance = distance_to_bike
+				closest_path = path_index
+                return closest_path
+
 	def pid_controller(self):
 		"""Two parts here: a regular PID controller, and a component
 		that detects when a turn is coming up so we can start turning
