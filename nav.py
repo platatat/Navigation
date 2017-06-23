@@ -4,8 +4,6 @@ import math
 import sys
 import geometry
 import bikeState
-#imported bikSim to be able to calculate overshoots distance
-import bikeSim
 import mapModel
 from constants import *
 
@@ -28,40 +26,41 @@ class Nav(object):
 
 		# Precompute when we need to turn
 		self.lookahead_distances = [0] * num_paths
-		self.lookahead_angles = [0] * num_paths # Holds angles between segments
 		self.lookahead_factors = [0] * num_paths
 		for index, curr_segment in enumerate(self.map_model.paths):
 
-			# Compute the angle the current segment makes with the x-axis
-			curr_vector = (curr_segment[1][0] - curr_segment[0][0], curr_segment[1][1] - curr_segment[0][1])
+			# Compute angle between current segment and +x-axis
+			curr_vector = (curr_segment[1][0] - curr_segment[0][0],
+				curr_segment[1][1] - curr_segment[0][1])
 			curr_angle = math.atan2(curr_vector[1], curr_vector[0])
 
-			# Compute the angle the next segment makes with the x-axis
+			# Compute the angle between next segment and +x-axis
 			next_index = (index + 1) % len(self.map_model.paths)
 			next_segment = self.map_model.paths[next_index]
-			next_vector = (next_segment[1][0] - next_segment[0][0], next_segment[1][1] - next_segment[0][1])
+			next_vector = (next_segment[1][0] - next_segment[0][0],
+				next_segment[1][1] - next_segment[0][1])
 			next_angle = math.atan2(next_vector[1], next_vector[0])
 
-			# Find the angle between the current path segment and the next path segment
+			# Find angle between current and next path segments
 			angle_diff = next_angle - curr_angle
 
-			# Fix range of angle (this happens if the path is right-to-left)
+			# Keep angle_diff between -math.pi and +math.pi
 			if abs(angle_diff) > math.pi:
-				angle_diff -= math.copysign(2 * math.pi, angle_diff)
+				angle_diff -= math.copysign(2 * math.pi,
+					angle_diff)
 
-			#print("Segment {} to segment {}: {} degrees".format(index, index + 1 % num_paths, angle_diff * RAD_TO_DEG))
-			self.lookahead_angles[index] = angle_diff
-
-			# If the turn angle is less than 90 degrees, use the sin-based formula
+			# angle_diff < 90 -> use sin-based formula
 			angle_diff = abs(angle_diff)
 			curr_factor = 1
 			if angle_diff < math.pi / 2:
 				curr_factor = math.sin(angle_diff)
 			else:
-				curr_factor = 1 / math.tan(math.pi/2 - angle_diff/2)
+				curr_factor = 1 / math.tan(math.pi / 2 -
+					angle_diff / 2)
 			self.lookahead_factors[index] = curr_factor
 			curr_lookahead = MIN_TURN_RADIUS * curr_factor
-			print("{} => {}".format(abs(angle_diff) * RAD_TO_DEG, curr_lookahead))
+			print("{} => {}".format(abs(angle_diff) * RAD_TO_DEG,
+				curr_lookahead))
 			self.lookahead_distances[index] = curr_lookahead
 
 	def clamp_steer_angle(self, steerD):
@@ -74,21 +73,26 @@ class Nav(object):
 		return steerD
 
 	def find_closest_path(self, point):
-		""" Finds and returns the closest path to the given point from the list of paths """
+		"""
+		Finds and returns the closest path to the given point
+		from the list of paths (stored in self.map_model.paths)
+		"""
 		closest_distance = sys.maxint
 		closest_path = 0
 		for path_index, path in enumerate(self.map_model.paths):
-			nearest_point = geometry.nearest_point_on_path(path, point)
-			distance_to_bike = geometry.distance(nearest_point, point)
+			nearest_pt = geometry.nearest_point_on_path(path, point)
+			distance_to_bike = geometry.distance(nearest_pt, point)
 			if (closest_distance > distance_to_bike):
 				closest_distance = distance_to_bike
 				closest_path = path_index
                 return closest_path
 
 	def pid_controller(self):
-		"""Two parts here: a regular PID controller, and a component
-		that detects when a turn is coming up so we can start turning
-		early."""
+		"""
+		Two parts here: a regular PID controller, and a
+		component that detects when a turn is coming up so we
+		can start turning early.
+		"""
 
 		bike = self.map_model.bike
 		bike_pos = (bike.xB, bike.yB)
@@ -100,12 +104,16 @@ class Nav(object):
 		# Get a unit vector perpendicular to the path
 		path_vector = (path[1][0] - path[0][0], path[1][1] - path[0][1])
 		path_perp_vector = np.array((-path_vector[1], path_vector[0]))
-		path_perp_unit_vector = path_perp_vector / np.linalg.norm(path_perp_vector)
+		path_perp_unit_vector = (path_perp_vector /
+			np.linalg.norm(path_perp_vector))
 
-		# Project vector from path[0] to bike onto the path perp unit vector to get signed distance
+		# Project vector from path[0] to bike onto the path
+		# perpendicular unit vector to get signed distance
 		# (positive when the bike is to the left of the path)
-		path_to_bike_vector = np.array((bike.xB - path[0][0], bike.yB - path[0][1]))
-		signed_dist = np.dot(path_perp_unit_vector, path_to_bike_vector)
+		path_to_bike_vector = np.array((bike.xB - path[0][0],
+			bike.yB - path[0][1]))
+		signed_dist = np.dot(path_perp_unit_vector,
+			path_to_bike_vector)
 
 		# Get angle between this path segment and the x-axis
 		path_angle = math.atan2(path_vector[1], path_vector[0])
@@ -114,51 +122,62 @@ class Nav(object):
 
 		# Force bike angle between 0 and 2pi
 		corrected_bike_psi = bike.psi
-		while corrected_bike_psi < 0: corrected_bike_psi += 2 * math.pi
-		while corrected_bike_psi > 2 * math.pi: corrected_bike_psi -= 2 * math.pi
-		#print("Bike psi of {} corrected to {}".format(bike.psi, corrected_bike_psi))
-
-		#print("Path angle is {}, bike angle  is {}".format(path_angle * RAD_TO_DEG, corrected_bike_psi * RAD_TO_DEG))
+		while corrected_bike_psi < 0:
+			corrected_bike_psi += 2 * math.pi
+		while corrected_bike_psi > 2 * math.pi:
+			corrected_bike_psi -= 2 * math.pi
 
 		# Get angle between bike and path
 		angle_diff = corrected_bike_psi - path_angle
 
 		while abs(angle_diff) > math.pi:
 			angle_diff -= math.copysign(2 * math.pi, angle_diff)
-		print("Angle diff of {} corrected to {}".format((corrected_bike_psi - path_angle) * RAD_TO_DEG, angle_diff * RAD_TO_DEG))
 
-		distance_contribution = PID_DIST_GAIN * MAX_STEER * math.tanh(signed_dist)
-		angle_contribution = (1.5 if (abs(signed_dist) > 1.5) else 2) * angle_diff
-		next_turn_contribution = NEXT_TURN_GAIN * self.create_lookahead_correction(path, bike)
+		# Debug statement to show the data going into each
+		# contribution
+		print("signed_dist = {:.4f}\tangle_diff = {:.4f}"
+			.format(signed_dist, angle_diff))
 
+		# Emphasize distance further away from the path
+		distance_gain = (PID_DIST_GAIN *
+			(2 if (abs(signed_dist) > 3) else 1))
+		distance_contribution = (distance_gain * MAX_STEER *
+			math.tanh(signed_dist))
+
+		# If we're right next to the path, emphasize the angle
+		angle_gain = (1.5 if (abs(signed_dist) > 1.5) else 2)
+		angle_contribution = angle_gain * angle_diff
+		next_turn_contribution = (NEXT_TURN_GAIN *
+			self.create_lookahead_correction(path, bike))
+
+		# If we're turning, the turn takes priority over other
+		# contributions
 		if next_turn_contribution:
 			distance_contribution = 0
 			angle_contribution = 0
 
+
+		# Debug statement to show each contribution
 		describe_angle = lambda angle: "right" if angle > 0 else "left"
-		print("dist = {:.4f} ({})\tangle = {:.4f} ({})\tnext_turn = {:.4f} ({})"
-		      .format(distance_contribution, describe_angle(distance_contribution),
-			      angle_contribution, describe_angle(angle_contribution),
-		      next_turn_contribution, describe_angle(next_turn_contribution)))
+		print(("dist = {:.4f} ({})\tangle = {:.4f} ({})\t" +
+			"next_turn = {:.4f} ({})").format(distance_contribution,
+			describe_angle(distance_contribution),
+			angle_contribution, describe_angle(angle_contribution),
+			next_turn_contribution,
+			describe_angle(next_turn_contribution)))
 
-		# The original purpose of this if statement was to detect the case where the bike was turning
-		# towards the path and it was going to end up going perpendicular - in this case we needed to
-		# amp up the angle-fixing and de-emphasize the distance fixing.
-		if abs(angle_diff) > MAX_ACCEPTABLE_ANGLE_DIFF:
-			if False:#abs(angle_diff) > math.pi / 4.0:
-				distance_contribution /= 2.5
-				angle_contribution *= 2
-			else:
-				distance_contribution /= 1.5
-
-		steerD = distance_contribution + angle_contribution + next_turn_contribution
+		steerD = (distance_contribution + angle_contribution +
+			next_turn_contribution)
 		return self.clamp_steer_angle(steerD)
 
 	def create_lookahead_correction(self, current_path, bike):
+		"""
+		Looks at the path ahead and returns a steering angle
+		correction.
+		"""
 
-		"""Looks at the path ahead and returns a steering angle correction."""
-
-		# Project bike-to-path-endpoint and bike-to-path-start vectors onto path unit vector
+		# Project bike-to-path-endpoint and bike-to-path-start
+		# vectors onto path unit vector
 		path_start_to_bike_vector =  np.array((current_path[0][0] -
 			bike.xB, current_path[0][1] - bike.yB))
 		path_endpoint_to_bike_vector = np.array((current_path[1][0] -
@@ -175,11 +194,12 @@ class Nav(object):
 		# Calculate angle wrt x-axis of current path segment
 		path_angle = math.atan2(path_vector[1], path_vector[0])
 
-		lookahead_distance = self.lookahead_distances[self.closest_path_index]
+		lookahead_distance =\
+			self.lookahead_distances[self.closest_path_index]
 		prev_segment_index = ((self.closest_path_index - 1) %
 			len(self.lookahead_distances))
-		prev_lookahead_distance = self.lookahead_distances[prev_segment_index]
-		print("{} vs {}".format(dist_until_endpoint, lookahead_distance))
+		prev_lookahead_distance =\
+			self.lookahead_distances[prev_segment_index]
 		if dist_until_endpoint < lookahead_distance:
 
 			# Find the angle between this segment and the next one
@@ -191,48 +211,61 @@ class Nav(object):
 				next_segment[0][1])
 
 			# Calculate angle between next segment and x-axis
-			next_segment_angle = math.atan2(next_segment_vector[1], next_segment_vector[0])
+			next_segment_angle = math.atan2(next_segment_vector[1],
+				next_segment_vector[0])
 			segment_angle_diff = next_segment_angle - path_angle
 
-			# If the path is right-to-left (and perhaps other cases), fix range of angle
+			# If the path is right-to-left (and perhaps
+			# other cases), fix range of angle
 			if abs(segment_angle_diff) > math.pi:
-				segment_angle_diff -= math.copysign(2 * math.pi, segment_angle_diff)
-			return math.copysign(MAX_STEER, -segment_angle_diff)#-segment_angle_diff * NEXT_TURN_GAIN
-		elif not self.first_segment and dist_from_start < prev_lookahead_distance:
+				segment_angle_diff -= math.copysign(2 * math.pi,
+					segment_angle_diff)
+			return math.copysign(MAX_STEER, -segment_angle_diff)
+		elif (not self.first_segment and
+			dist_from_start < prev_lookahead_distance):
 			
-			# Find the angle between this segment and the previous one
-			prev_segment = self.map_model.paths[prev_segment_index]
-			prev_segment_vector = (prev_segment[1][0] - prev_segment[0][0], prev_segment[1][1] - prev_segment[0][1])
+			# Find the angle between this segment and the
+			# previous one
+			prev_seg = self.map_model.paths[prev_seg_index]
+			prev_seg_vector = (prev_seg[1][0] - prev_seg[0][0],
+				prev_seg[1][1] - prev_seg[0][1])
 
-			prev_segment_angle = math.atan2(prev_segment_vector[1], prev_segment_vector[0])
-			prev_segment_angle_diff = prev_segment_angle - path_angle
+			prev_seg_angle = math.atan2(prev_seg_vector[1],
+				prev_seg_vector[0])
+			prev_seg_angle_diff = prev_seg_angle - path_angle
 
-			# If the path is right-to-left (and perhaps other cases), fix range of angle
-			if abs(prev_segment_angle_diff) > math.pi:
-				prev_segment_angle_diff -= math.copysign(2 * math.pi, prev_segment_angle_diff)
+			# If the path is right-to-left (and perhaps
+			# other cases), fix range of angle
+			if abs(prev_seg_angle_diff) > math.pi:
+				prev_seg_angle_diff -= math.copysign(
+					2 * math.pi, prev_seg_angle_diff)
 
-			return math.copysign(MAX_STEER, prev_segment_angle_diff)
+			return math.copysign(MAX_STEER, prev_seg_angle_diff)
 		else:
 			return 0
 
-	def quintic_steering_angle(self, dist_error, angle_error, curvature_error, L, s):
+	def quintic_steering_angle(
+			self, dist_error, angle_error, curvature_error, L, s):
 		# Equations from pages 15-16 of:
-		# http://ri.cmu.edu/pub_files/pub3/singh_sanjiv_1991_1/singh_sanjiv_1991_1.pdf
+		# http://www.dtic.mil/dtic/tr/fulltext/u2/a243523.pdf
 		a2 = 2 * curvature_error
-		a3 = -(13 * curvature_error * L**2 + 12 * angle_error * L + 20 * dist_error) / (2 * L**3)
-		a4 = (9 * curvature_error * L**2 + 8 * angle_error * L + 15 * dist_error) / (L**4)
-		a5 = -(7 * curvature_error * L**2 + 6 * angle_error * L + 12 * dist_error) / (2 * L**5)
-		error_space_curvature = 2 * a2 + 6 * a3 * s + 12 * a4 * s ** 2 + 20 * a5 * s ** 3
+		a3 = -(13 * curvature_error * L**2 + 12 * angle_error * L +
+			20 * dist_error) / (2 * L**3)
+		a4 = (9 * curvature_error * L**2 + 8 * angle_error * L +
+			15 * dist_error) / (L**4)
+		a5 = -(7 * curvature_error * L**2 + 6 * angle_error * L +
+			12 * dist_error) / (2 * L**5)
+		error_space_curvature = (2 * a2 + 6 * a3 * s + 12 * a4 * s**2 +
+			20 * a5 * s ** 3)
 		return math.atan(error_space_curvature * BIKE_LENGTH)
 
 	def quintic(self):
 		bike = self.map_model.bike
 		bike_pos = (bike.xB, bike.yB)
 
-		# The quintic demands three parameters: distance error, heading
-		# error, and curvature error. We could calculate curvature error
-		# with a queue and a table but nah it seems to be doing fine
-		# anyway.
+		# The quintic demands three parameters: distance error,
+		# heading error, and curvature error. We don't provide
+		# any curvature error at the moment.
 
 		# Determine the path segment closest to the bike
 		self.closest_path_index = self.find_closest_path(bike_pos)
@@ -241,17 +274,22 @@ class Nav(object):
 		# Get a unit vector perpendicular to the path
 		path_vector = (path[1][0] - path[0][0], path[1][1] - path[0][1])
 		path_perp_vector = np.array((-path_vector[1], path_vector[0]))
-		path_perp_unit_vector = path_perp_vector / np.linalg.norm(path_perp_vector)
+		path_perp_unit_vector = (path_perp_vector /
+			np.linalg.norm(path_perp_vector))
 
-		# Project vector from path[0] to bike onto the path perp unit vector to get signed distance
-		# (positive when the bike is to the left of the path)
-		path_to_bike_vector = np.array((bike.xB - path[0][0], bike.yB - path[0][1]))
+		# Project vector from path[0] to bike onto the path perp
+		# unit vector to get signed distance (positive when the
+		# bike is to the left of the path)
+		path_to_bike_vector = np.array((bike.xB - path[0][0],
+			bike.yB - path[0][1]))
 		signed_dist = np.dot(path_perp_unit_vector, path_to_bike_vector)
 
 		# Force bike angle between -pi and pi
 		corrected_bike_psi = bike.psi
-		while corrected_bike_psi > math.pi: corrected_bike_psi -= math.pi
-		while corrected_bike_psi < -math.pi: corrected_bike_psi += math.pi
+		while corrected_bike_psi > math.pi:
+			corrected_bike_psi -= math.pi
+		while corrected_bike_psi < -math.pi:
+			corrected_bike_psi += math.pi
 
 		# Get angle between this path segment and the x-axis
 		path_angle = math.atan2(path_vector[1], path_vector[0])
@@ -266,7 +304,8 @@ class Nav(object):
 
 		curvature_error = 0.0
 		steerD = -self.quintic_steering_angle(signed_dist, angle_diff,
-			curvature_error, QUINTIC_LOOKAHEAD, QUINTIC_SAMPLE_LENGTH)
+			curvature_error, QUINTIC_LOOKAHEAD,
+			QUINTIC_SAMPLE_LENGTH)
 
 		steerD += self.create_lookahead_correction(path, bike)
 
