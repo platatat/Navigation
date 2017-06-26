@@ -70,7 +70,7 @@ def parse_json(presets=False):
 
 
 	if (not presets):
-		url = urllib.urlopen("https://autonomous-bicyc-1486924645777.appspot.com/getwaypoints") #NEW
+		url = urllib.urlopen("https://abserver-168813.appspot.com/getwaypoints") #NEW
 		string = url.read()
 
 		#Make into dictionary
