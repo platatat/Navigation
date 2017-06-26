@@ -3,6 +3,7 @@ import json
 import urllib
 import math
 import numpy as np
+from itertools import groupby
 
 """ Run server """
 
@@ -93,6 +94,9 @@ def parse_json(presets=False):
 		# Scaling Issue of points. Need to ZOOM IN because discrepancies are very small
 		print points
 		# print points2
+		
+		# Remove consecutive duplicate waypoints
+		points = [x[0] for x in groupby(points)]
 		return points
 
 	else:
