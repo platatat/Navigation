@@ -38,16 +38,19 @@ except ImportError:
 
 def loop_pyqtgraph(nav, bike, map_model):
 	traces = [dict()]
-	qt_app = QtGui.QApplication([])
-	qt_win = pg.GraphicsWindow(title="Basic plotting examples")
-	qt_win.resize(800, 600)
-	qt_win.setWindowTitle("Testing!")
+
+	# Set the background color of all plots to white for legibility
+	pg.setConfigOption('background', 'w')
+
+	qt_win = pg.GraphicsWindow(title="Bike Simulator 2017")
 
 	# Stores every item in the "trajectory" plot
 	plot_items = [dict()]
 
 	# This ViewBox will hold the bike and trajectory
-	viewbox = qt_win.addViewBox(col=0, row=1, lockAspect=1.0)
+	viewbox = qt_win.addPlot(col=0, row=0, lockAspect=1.0)
+	viewbox.sigResized = viewbox.sigRangeChanged # Axes need this method
+	viewbox.showAxis("bottom", show=True)
 
 	# Make an item for the bike
 	bike_polygon = QtGui.QPolygonF()
@@ -115,7 +118,7 @@ def loop_pyqtgraph(nav, bike, map_model):
 	
 	anim_timer = QtCore.QTimer()
 	anim_timer.timeout.connect(update)
-	anim_timer.start(10)
+	anim_timer.start(0)
 
 	QtGui.QApplication.instance().exec_()
 
@@ -309,15 +312,15 @@ def find_display_bounds(waypoints):
 	return {"xlim": xlim, "ylim": ylim}
 
 if __name__ == '__main__':
-	new_bike = bikeState.Bike(0, 5, 0.5, 0, 0, 0, 3.57)
+	new_bike = bikeState.Bike(0, 0, 0.1, 0, 0, 0, 3.57)
 	# waypoints = requestHandler.parse_json(True)
 	#waypoints = [(0,0), (20, 5), (40, 5)]
-	waypoints = [(0,0), (50, 0)]
+	#waypoints = [(0,0), (50, 0)]
 	#waypoints = [(0,0), (20, 5), (40, -5), (60, 10), (100, -20), (40, -50), (0,-10), (0, 0)]
 	#waypoints = [(40, 0), (20, -10), (0, 0)]
 	#waypoints = [(0,0), (50, 0), (50, 50), (0, 50), (0,0)]
 	#waypoints = [(0, 0), (10, 0), (20, 5), (25, 15), (12, 20), (0, 15), (0, 0)]
-	#waypoints = [(0, 0), (20, 0), (40, 10), (50, 30), (24, 40), (0, 30), (0, 0)]
+	waypoints = [(0, 0), (20, 0), (40, 10), (50, 30), (24, 40), (0, 30), (0, 0)]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	# print "PATHS", new_nav.map_model.paths

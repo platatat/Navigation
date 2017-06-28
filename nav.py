@@ -55,8 +55,7 @@ class Nav(object):
 			if angle_diff < math.pi / 2:
 				curr_factor = math.sin(angle_diff)
 			else:
-				curr_factor = 1 / math.tan(math.pi / 2 -
-					angle_diff / 2)
+				curr_factor = math.tan(angle_diff / 2)
 			self.lookahead_factors[index] = curr_factor
 			curr_lookahead = MIN_TURN_RADIUS * curr_factor
 			print("{} => {}".format(abs(angle_diff) * RAD_TO_DEG,
@@ -145,7 +144,7 @@ class Nav(object):
 			math.tanh(signed_dist))
 
 		# If we're right next to the path, emphasize the angle
-		angle_gain = (1.5 if (abs(signed_dist) > 1.5) else 2)
+		angle_gain = (1.5 if (abs(signed_dist) > 1.5) else 1.8)
 		angle_contribution = angle_gain * angle_diff
 		next_turn_contribution = (NEXT_TURN_GAIN *
 			self.create_lookahead_correction(path, bike))
