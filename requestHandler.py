@@ -3,6 +3,7 @@ import json
 import urllib
 import math
 import numpy as np
+from itertools import groupby
 
 """ Run server """
 
@@ -50,8 +51,6 @@ def math_convert(latitude, longitude):
 	# print "HERE", d
 	return (d*np.sin(bearing), d*np.cos(bearing))
 
-
-
 def bearing_from_origin(origin, latitude, longitude):
 	y = np.sin(longitude-origin[1]) * np.cos(latitude)
 	x = np.cos(origin[0]) * np.sin(latitude) - np.sin(origin[0])*np.cos(latitude)*np.cos(longitude-origin[1])
@@ -70,7 +69,7 @@ def parse_json(presets=False):
 
 
 	if (not presets):
-		url = urllib.urlopen("https://autonomous-bicyc-1486924645777.appspot.com/getwaypoints") #NEW
+		url = urllib.urlopen("https://abserver-168813.appspot.com/getwaypoints") #NEW
 		string = url.read()
 
 		#Make into dictionary
@@ -89,10 +88,14 @@ def parse_json(presets=False):
 				xy2 = convert2(latitude, longitude)
 				points.append(xy)
 				points2.append(xy2)
+				
+		# Remove consecutive duplicate waypoints
+		points = [x[0] for x in groupby(points)]
 
 		# Scaling Issue of points. Need to ZOOM IN because discrepancies are very small
 		print points
 		# print points2
+		
 		return points
 
 	else:

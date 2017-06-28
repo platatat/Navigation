@@ -4,13 +4,10 @@ from std_msgs.msg import Int32
 from geometry_msgs.msg import Pose2D
 import time
 import random 
-import matplotlib
-import matplotlib.pyplot as plt
 import bikeState
 import bikeSim
 import mapModel
 import numpy as np
-from matplotlib import collections  as mc
 from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import MultiArrayLayout
