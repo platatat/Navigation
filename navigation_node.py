@@ -41,6 +41,7 @@ def update_bike_xy(data):
     # of GPS data we received
 
     # These are the four variables we use below
+    global old_gps_set
     curr_gps_set = (data.data[0], data.data[1], data.data[7], data.data[8])
     if curr_gps_set == old_gps_set:
         rospy.loginfo("Rejecting data from gps")
