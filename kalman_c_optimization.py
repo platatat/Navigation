@@ -57,10 +57,10 @@ for a in range(11):
                 
                 if errorTotal < min_error:
                     min_error = errorTotal
-                    min_a = a
-                    min_b = b
-                    min_c = c
-                    min_d = d
+                    min_a = a/10.
+                    min_b = b/10.
+                    min_c = c/10.
+                    min_d = d/10.
                 
                 count += 1
                 print(count)
