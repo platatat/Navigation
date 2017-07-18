@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 import numpy as np
-
 
 def kalman_no_loop(state, C):
     """Kalman filter from MATLAB. Input is matrix of gps data, output is the Kalman matrix"""

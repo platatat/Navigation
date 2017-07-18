@@ -5,7 +5,7 @@ import sys
 import kalman
 import requestHandler
 
-GPS_FILE = "/Users/joshuasones/Desktop/gps_2017-07-11~~02-29-18-PM.csv"
+GPS_FILE = "/Users/joshuasones/Desktop/copy.csv"
 
 gps_data = []
 
