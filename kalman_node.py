@@ -52,7 +52,7 @@ def listener():
             if len(gps_data) == 1:
                 output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]), 
                                                      (gps_data[-1], np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]))) 
-            else 
+            else:
                 output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]), 
                                                      (kalman_state_matrix, p_state_matrix)) 
 
