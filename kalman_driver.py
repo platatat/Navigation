@@ -1,7 +1,6 @@
 import csv
 import matplotlib
 import numpy as np
-import gps_assisted_simulator_node 
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -32,14 +31,14 @@ with open(GPS_FILE) as gps_file:
 gps_matrix = np.matrix(gps_data)
 
 # Plot the GPS data
-plt.scatter(gps_matrix[:,0], gps_matrix[:,1], c='r')
+plt.scatter(gps_matrix[:,0], gps_matrix[:,1], c='r', edgecolors="none")
 
 # Run the Kalman filter
 C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
 output_matrix = kalman.kalman_no_loop(gps_matrix, C)
 
 # Plot the Kalman output
-plt.scatter(output_matrix[:,0], output_matrix[:,1])
+plt.scatter(output_matrix[:,0], output_matrix[:,1], edgecolors="none")
 
 # Show everything
 plt.show()
