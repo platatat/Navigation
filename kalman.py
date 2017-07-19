@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 import numpy as np
 
-def kalman_no_loop(state):
+def kalman_no_loop(state, C):
     """Kalman filter from MATLAB. Input is matrix of gps data, output is the Kalman matrix"""
     
     eye4 = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
@@ -32,14 +31,14 @@ def kalman_no_loop(state):
     
     t_step = 1/50.
     A = np.matrix([[1, 0 , t_step, 0], [0, 1, 0, t_step], [0, 0, 1, 0], [0, 0, 0, 1]]) 
-    C = np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+    #C = np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     P_current = eye4
     R = 4*eye4
  
     kalman_state = np.matrix(np.zeros((4,rows), dtype=float))
     
     
-    for i in range(len(x_pos)):
+    for i in range(rows):
         
         kalman_state[:, i] = s_current
         
@@ -69,7 +68,5 @@ def kalman_no_loop(state):
         P_current = P_new
         
     return kalman_state.T
-
-
         
     
