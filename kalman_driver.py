@@ -1,6 +1,7 @@
 import csv
 import matplotlib
 import numpy as np
+import gps_assisted_simulator_node 
 
 import matplotlib
 from matplotlib import pyplot as plt

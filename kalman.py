@@ -8,7 +8,7 @@ def kalman_no_loop(state):
     state = np.matrix(state)
     rows = state.shape[0]
     cols = state.shape[1]
-    
+
     if cols == 4:
         x_pos = state[:,0]
         y_pos = state[:,1]
