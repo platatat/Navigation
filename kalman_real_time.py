@@ -31,7 +31,6 @@ def kalman_no_loop(state, C, s_current, P_current):
     
     t_step = 1/50.
     A = np.matrix([[1, 0 , t_step, 0], [0, 1, 0, t_step], [0, 0, 1, 0], [0, 0, 0, 1]]) 
-    #C = np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     R = 4*eye4
  
     #kalman_state = np.matrix(np.zeros((4,rows), dtype=float))
@@ -42,7 +41,7 @@ def kalman_no_loop(state, C, s_current, P_current):
         #kalman_state[:, i] = s_current
         
     s_new = A*s_current
-    P_new = A*P_current*A.T
+    P_new = A*P_current*A.T + eye4
         
     if cols ==7:
         x_actual = state.item(0)
