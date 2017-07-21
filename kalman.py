@@ -32,7 +32,7 @@ def kalman_no_loop(state, C):
         kalman_state[:, i] = s_current
         
         s_new = A*s_current
-        P_new = A*P_current*A.T
+        P_new = A*P_current*A.T + eye4
         
     
         x_actual = state.item(i, 0)
