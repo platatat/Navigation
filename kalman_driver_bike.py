@@ -50,13 +50,12 @@ with open(BIKE_STATE_FILE) as bike_state_file:
 gps_matrix = np.matrix(gps_data)
 bike_state_matrix = np.matrix(bike_state_data)
 combined_matrix = np.insert(gps_matrix, 2, bike_state_matrix.flatten(), axis=1)
-#print combined_matrix.shape
 
 # Plot the GPS data
 plt.scatter(combined_matrix[:,0], combined_matrix[:,1], c='r', edgecolors="none")
 
 # Run the Kalman filter
-C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
+C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0.1]])
 output_matrix = kalman.kalman_no_loop(combined_matrix, C)
 
 # Plot the Kalman output

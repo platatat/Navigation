@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 import kalman
 import requestHandler
 
-GPS_FILE = "/Users/joshuasones/Desktop/copy.csv"
+GPS_FILE = "/Users/joshuasones/Desktop/gps_2017-07-18~~02-36-30-PM-copy.csv"
 
 gps_data = []
 
@@ -24,8 +24,9 @@ with open(GPS_FILE) as gps_file:
 
         # field0 is lat, field1 is long, field7 is yaw in degrees,
         # field8 is speed from the gps (meters per second)
+        # field10 is timestep (miliseconds)
         x, y = requestHandler.math_convert(float(row[2]), float(row[3]))
-        gps_data.append([x, y, float(row[9]), float(row[10])])
+        gps_data.append([x, y, float(row[9]), float(row[10]), float(row[12])])
 
 # The Kalman filter wants the GPS data in matrix form
 gps_matrix = np.matrix(gps_data)
