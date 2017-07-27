@@ -15,7 +15,7 @@ def kalman_no_loop(state, C, prev_state):
         yaw = state[:,2]
         v = state[:,3]
         
-    elif cols == 7:
+    else:
         x_pos = state[:,0]
         y_pos = state[:,1]
         phi = state[:,2]

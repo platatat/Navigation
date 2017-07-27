@@ -12,12 +12,12 @@ import kalman
 import requestHandler
 
 
-def bike_state(data)
+def bike_state(data):
     velocity = data.data[6]
     yaw = data.data[9]
     bike_vy = [velocity, yaw]
     
-def gps(data)
+def gps(data):
     #Important fields from data
     latitude = data.data[0] # In degrees
     longitude = data.data[1]
