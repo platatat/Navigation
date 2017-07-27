@@ -12,15 +12,6 @@ def kalman_no_loop(state, C, s_current, P_current):
     yaw = state[:,2]
     v = state[:,3]
     t_step = state[:,4]
-        
-    else:
-        x_pos = state[:,0]
-        y_pos = state[:,1]
-        phi = state[:,2]
-        yaw = state[:,3]
-        delta = state[:,4]
-        phi_dot = state[:,5]
-        v = state[:,6]
     
     v_0 = v.item(0)
     yaw_0 = yaw.item(0)
