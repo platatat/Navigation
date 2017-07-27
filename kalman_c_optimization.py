@@ -5,7 +5,7 @@ import sys
 import kalman
 import requestHandler
 
-GPS_FILE = "/Users/joshuasones/Desktop/copy.csv"
+GPS_FILE = "/Users/joshuasones/Desktop/gps_2017-07-18~~02-36-30-PM-copy.csv"
 
 gps_data = []
 
@@ -19,14 +19,32 @@ with open(GPS_FILE) as gps_file:
             header_row = False
             continue
 
-        # field0 is lat, field1 is long, field7 is yaw in degrees,
-        # field8 is speed from the gps (meters per second)
+        # field0 is lat, field1 is long, field7 is yaw
         x, y = requestHandler.math_convert(float(row[2]), float(row[3]))
-        gps_data.append([x, y, float(row[9]), float(row[10])])
+        gps_data.append([x, y, float(row[9])])
 
-# The Kalman filter wants the GPS data in matrix form
+BIKE_STATE_FILE = "/Users/joshuasones/Desktop/bike_2017-07-18~~02-36-30-PM-copy.csv"
+
+bike_state_data = []
+
+with open(BIKE_STATE_FILE) as bike_state_file:
+    bike_state_reader = csv.reader(bike_state_file, delimiter=",")
+    header_row = True
+    for row in bike_state_reader:
+        if header_row:
+            
+            #Skip the first row, which contains the headers
+            header_row = False
+            continue
+        
+        #field9 is yaw
+        bike_state_data.append([180+float(row[11])*180/np.pi])
+
+# The Kalman filter wants the data in combined matrix form
 gps_matrix = np.matrix(gps_data)
-rows = gps_matrix.shape[0]
+bike_state_matrix = np.matrix(bike_state_data)
+combined_matrix = np.insert(gps_matrix, 2, bike_state_matrix.flatten(), axis=1)
+rows = combined_matrix.shape[0]
 
 # Find optimal values for C (translated from kalmanRunner in MATLAB)
 min_error = sys.maxint
@@ -39,7 +57,7 @@ for a in range(11):
             for d in range(11):
                 
                 C = np.matrix([[a/10., 0, 0, 0], [0, b/10., 0, 0], [0, 0, c/10., 0], [0, 0, 0, d/10.]])
-                kalman_state = kalman.kalman_no_loop(gps_matrix, C)
+                kalman_state = kalman.kalman_no_loop(combined_matrix, C)
                 
                 x_pos = gps_matrix[:,0]
                 y_pos = gps_matrix[:,1]

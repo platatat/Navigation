@@ -1,7 +1,6 @@
 import csv
 import matplotlib
 import numpy as np
-import gps_assisted_simulator_node 
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -9,7 +8,7 @@ from matplotlib import pyplot as plt
 import kalman
 import requestHandler
 
-GPS_FILE = "/Users/joshuasones/Desktop/copy.csv"
+GPS_FILE = "/Users/joshuasones/Desktop/gps_2017-07-18~~02-36-30-PM-copy.csv"
 
 gps_data = []
 
@@ -25,21 +24,22 @@ with open(GPS_FILE) as gps_file:
 
         # field0 is lat, field1 is long, field7 is yaw in degrees,
         # field8 is speed from the gps (meters per second)
+        # field10 is timestep (miliseconds)
         x, y = requestHandler.math_convert(float(row[2]), float(row[3]))
-        gps_data.append([x, y, float(row[9]), float(row[10])])
+        gps_data.append([x, y, float(row[9]), float(row[10]), float(row[12])])
 
 # The Kalman filter wants the GPS data in matrix form
 gps_matrix = np.matrix(gps_data)
 
 # Plot the GPS data
-plt.scatter(gps_matrix[:,0], gps_matrix[:,1], c='r')
+plt.scatter(gps_matrix[:,0], gps_matrix[:,1], c='r', edgecolors="none")
 
 # Run the Kalman filter
 C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
 output_matrix = kalman.kalman_no_loop(gps_matrix, C)
 
 # Plot the Kalman output
-plt.scatter(output_matrix[:,0], output_matrix[:,1])
+plt.scatter(output_matrix[:,0], output_matrix[:,1], edgecolors="none")
 
 # Show everything
 plt.show()
