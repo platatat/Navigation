@@ -11,12 +11,12 @@ import kalman
 import requestHandler
 
 
-def bike_state(data)
+def bike_state(data):
     velocity = data.data[6]
     yaw = data.data[9]
     bike_yv = [yaw, velocity]
     
-def gps(data)
+def gps(data):
     #Important fields from data
     latitude = data.data[0] # In degrees
     longitude = data.data[1]
@@ -62,8 +62,8 @@ def listener():
                 s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
 
 
-                output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, , C, s_initial, P_initial) 
-            else 
+                output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, C, s_initial, P_initial) 
+            else: 
                 output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, C, 
                                                      kalman_state_matrix, p_state_matrix) 
 
@@ -88,7 +88,7 @@ def listener():
 if __name__ == '__main__':
     #Data from bike_state and gps respectively
     gps_xy = [] #x,y converted from latitude and longitude from gps
-    bike_vy = [] #bike velocity and yaw
+    bike_yv = [] #bike velocity and yaw
     time_step = 0
     #kalman/gps data saved as we go for later plotting
     kalman_data = [np.matrix[0]]
