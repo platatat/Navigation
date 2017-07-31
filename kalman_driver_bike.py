@@ -25,9 +25,9 @@ with open(GPS_FILE) as gps_file:
             header_row = False
             continue
 
-        # field0 is lat, field1 is long, field7 is yaw
+        # field0 is lat, field1 is long, field8 is speed, field10 is t_step
         x, y = requestHandler.math_convert(float(row[2]), float(row[3]))
-        gps_data.append([x, y, float(row[9])])
+        gps_data.append([x, y, float(row[10]), float(row[12])])
 
 BIKE_STATE_FILE = "/Users/joshuasones/Desktop/bike_2017-07-18~~02-36-30-PM-copy.csv"
 
@@ -43,8 +43,8 @@ with open(BIKE_STATE_FILE) as bike_state_file:
             header_row = False
             continue
         
-        #field9 is yaw
-        bike_state_data.append([180+float(row[11])*180/np.pi])
+        #field9 is yaw in radians
+        bike_state_data.append([180+float(row[11])])
 
 # The Kalman filter wants the data in combined matrix form
 gps_matrix = np.matrix(gps_data)
@@ -55,7 +55,7 @@ combined_matrix = np.insert(gps_matrix, 2, bike_state_matrix.flatten(), axis=1)
 plt.scatter(combined_matrix[:,0], combined_matrix[:,1], c='r', edgecolors="none")
 
 # Run the Kalman filter
-C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0.1]])
+C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
 output_matrix = kalman.kalman_no_loop(combined_matrix, C)
 
 # Plot the Kalman output

@@ -26,7 +26,7 @@ with open(GPS_FILE) as gps_file:
         # field8 is speed from the gps (meters per second)
         # field10 is timestep (miliseconds)
         x, y = requestHandler.math_convert(float(row[2]), float(row[3]))
-        gps_data.append([x, y, float(row[9]), float(row[10]), float(row[12])])
+        gps_data.append([x, y, float(row[9])*np.pi/180, float(row[10]), float(row[12])])
 
 # The Kalman filter wants the GPS data in matrix form
 gps_matrix = np.matrix(gps_data)
