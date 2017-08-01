@@ -52,7 +52,7 @@ def listener():
         gps_data.append(gps_matrix)
         # Run the Kalman filter - if we only have one point we can't run the filter yet
         if len(gps_data) >= 1:
-            C = np.matrix([[0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 1], [0, 0, 0, 1]])
+            C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             #If we have 
             if len(gps_data) == 1:
                 P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
@@ -67,6 +67,8 @@ def listener():
                 s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
 
 
+                #Returns a tuple of matrices - first entry is the kalman state - x, y, x', y'
+                #                            - second entry is p - the prediction error
                 output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, C, s_initial, P_initial)
             else:
                 output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, C, 
@@ -79,7 +81,7 @@ def listener():
             p_state = output_matrix[1].flatten()
             #save predicted state values for later plotting
             kalman_data.append(kalman_state_matrix) 
-        pub.publish(kalman_state) #SHOULD THIS LINE BE IN THE IF STATEMENT?
+            pub.publish(kalman_state) 
         rate.sleep()
         rospy.loginfo('SUCCESSFUL ITERATION')
     rospy.loginfo('Test was terminated')
@@ -96,7 +98,7 @@ if __name__ == '__main__':
     bike_yv = [] #bike velocity and yaw
     time_step = 0
     #kalman/gps data saved as we go for later plotting
-    kalman_data = np.matrix([0]) #COMPARE THIS LINE TO REAL TIME
+    kalman_data = np.matrix([0]) 
     gps_data = []
     #state that is published to ROS
     kalman_state = []
