@@ -19,8 +19,8 @@ from std_msgs.msg import MultiArrayDimension
 def bike_state(data):
     velocity = data.data[6]
     yaw = data.data[9]
-    rospy.loginfo("Velocity is %f", velocity)
-    rospy.loginfo("Yaw is %f", yaw)
+    #rospy.loginfo("Velocity is %f", velocity)
+    #rospy.loginfo("Yaw is %f", yaw)
     bike_yv = [yaw, velocity]
     
 def gps(data):
@@ -33,10 +33,10 @@ def gps(data):
     # Converts lat long to x,y 
     x, y = requestHandler.math_convert(float(latitude), float(longitude)) 
     # gps current state - only relevant fields
-    rospy.loginfo("x is %f", x)
-    rospy.loginfo("y is %f", y)
-    rospy.loginfo(rospy.is_shutdown())
-    rospy.loginfo("timestep is %f", time_step)
+    #rospy.loginfo("x is %f", x)
+    #rospy.loginfo("y is %f", y)
+    #rospy.loginfo(rospy.is_shutdown())
+    #rospy.loginfo("timestep is %f", time_step)
     gps_xy = [x, y]
    
 
@@ -46,16 +46,16 @@ def listener():
     rospy.init_node('kalman', anonymous=True)
     rospy.Subscriber("bike_state", Float32MultiArray, bike_state)
     rospy.Subscriber("gps", Float32MultiArray, gps)
+    #rospy.spin()  
     rate = rospy.Rate(100)
-
     #Run until the nodes are shutdown (end.sh run OR start.sh was killed)
     while not rospy.is_shutdown():
-        dim = [MultiArrayDimension('data', 4, 4)]
-        layout = MultiArrayLayout(dim, 4)
+        dim = [MultiArrayDimension('data', 1, 4)]
+        layout = MultiArrayLayout(dim, 0)
         # The Kalman filter wants the GPS data in matrix form
         #Build matrix from gps x,y coordinates and bike velocity and yaw
         gps_matrix = np.matrix(gps_xy + bike_yv + time_step)
-        rospy.loginfo(gps_matrix)
+        #rospy.loginfo(gps_matrix)
         #save gps state values for later plotting
         gps_data.append(gps_matrix)
         if len(gps_data) >= 1:
@@ -78,22 +78,21 @@ def listener():
             else:
                 output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, C, 
                                                      kalman_state_matrix, p_state_matrix) 
-            rospy.loginfo(output_matrix.shape)
+            #rospy.loginfo(output_matrix.shape)
             kalman_state_matrix = output_matrix[0] 
-            p_state_matrix = output_matrix[1]                                         
+            p_state_matrix = output_matrix[1]                                           
             #Change output_matrix to a standard array for publishing
-            kalman_state = output_matrix[0].flatten()
-            for item in kalman_state:
-                rospy.loginfo(item)
+            kalman_state = output_matrix[0].flatten().tolist()[0]
+            #rospy.loginfo(kalman_state)
             p_state = output_matrix[1].flatten()
             #save predicted state values for later plotting
-            kalman_data.append(kalman_state_matrix) 
+            #kalman_data.append(kalman_state_matrix) 
             #pub.publish(layout, kalman_state)
-        pub.publish("Hello world")
+        pub.publish(layout, kalman_state)
         rate.sleep()
-        rospy.loginfo('SUCCESSFUL ITERATION')
-    rospy.loginfo('Test was terminated')
-    rospy.spin()
+        #rospy.loginfo('SUCCESSFUL ITERATION')
+    #rospy.loginfo('Test was terminated')
+    #rospy.spin()
     # Plot the GPS data
     #plt.scatter(gps_data[:,0], gps_data[:,1], c='r')
     # Plot the Kalman output
@@ -117,3 +116,4 @@ if __name__ == '__main__':
     p_state_matrix = np.matrix([0])
 
     listener()
+    
