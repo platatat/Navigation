@@ -51,7 +51,7 @@ def listener():
         #save gps state values for later plotting
         gps_data.append(gps_matrix)
         if len(gps_data) >= 1:
-            C = np.matrix([[0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 1], [0, 0, 0, 1]])
+            C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             #If we have 
             if len(gps_data) == 1:
                 P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
@@ -64,8 +64,8 @@ def listener():
                 x_dot_0 = v_0 * np.cos(yaw_0)
                 y_dot_0 = v_0 * np.sin(yaw_0)
                 s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
-
-
+                #output matrix - returns a tuple - first entry - kalman state (x,y,x',y')
+                #                             - second entry - prediction error (p)
                 output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, C, s_initial, P_initial)
             else:
                 output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, C, 
@@ -78,8 +78,8 @@ def listener():
             p_state = output_matrix[1].flatten()
             #save predicted state values for later plotting
             kalman_data.append(kalman_state_matrix) 
-        pub.publish(kalman_state) #SHOULD THIS LINE BE IN THE IF STATEMENT?
-        rate.sleep()
+            pub.publish(kalman_state) #SHOULD THIS LINE BE IN THE IF STATEMENT?
+            rate.sleep()
         rospy.loginfo('SUCCESSFUL ITERATION')
     rospy.loginfo('Test was terminated')
     # Plot the GPS data
