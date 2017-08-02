@@ -16,9 +16,6 @@ from std_msgs.msg import MultiArrayDimension
 
 #Data from bike_state and gps respectively
 #rospy.loginfo("This is still happening")
-gps_xy = [1,1] #x,y converted from latitude and longitude from gps
-bike_yv = [1,1] #bike velocity and yaw
-time_step = [1]
 #kalman/gps data saved as we go for later plotting
 kalman_data = np.matrix([0])
 gps_data = []
@@ -29,13 +26,18 @@ p_state = []
 kalman_state_matrix = np.matrix([0])
 p_state_matrix = np.matrix([0])
 
-class Data(object):
+class Kalman(object):
     
     def __init__(self):
         
         self.gps_xy = []
         self.bike_yv = []
         self.time_step = []
+        
+        self.pub = rospy.Publisher('kalman_pub', Float32MultiArray, queue_size=10)
+        rospy.init_node('kalman', anonymous=True)
+        rospy.Subscriber("bike_state", Float32MultiArray, bike_state)
+        rospy.Subscriber("gps", Float32MultiArray, gps)
     
     def bike_state(data):
         velocity = data.data[6]
@@ -63,10 +65,6 @@ class Data(object):
 
 
     def listener():
-        pub = rospy.Publisher('kalman_pub', Float32MultiArray, queue_size=10)
-        rospy.init_node('kalman', anonymous=True)
-        rospy.Subscriber("bike_state", Float32MultiArray, bike_state)
-        rospy.Subscriber("gps", Float32MultiArray, gps)
         #rospy.spin()  
         rate = rospy.Rate(5)
         rospy.loginfo("gps_xy in listener is %f, %f", gps_xy[0], gps_xy[1])
@@ -110,7 +108,7 @@ class Data(object):
             #save predicted state values for later plotting
             #kalman_data.append(kalman_state_matrix) 
             #pub.publish(layout, kalman_state)
-            pub.publish(layout, kalman_state)
+            self.pub.publish(layout, kalman_state)
             rate.sleep()
             #rospy.spin()
         #rospy.loginfo('SUCCESSFUL ITERATION')
@@ -124,5 +122,5 @@ class Data(object):
         #plt.show()
 
 if __name__ == '__main__':
-    Data.listener()
+    Kalman().listener()
     
