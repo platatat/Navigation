@@ -30,27 +30,27 @@ class Kalman(object):
     
     def __init__(self):
         
-        self.gps_xy = []
-        self.bike_yv = []
-        self.time_step = []
+        self.gps_xy = [101,3]
+        self.bike_yv = [1,2]
+        self.time_step = [90]
         
         self.pub = rospy.Publisher('kalman_pub', Float32MultiArray, queue_size=10)
         rospy.init_node('kalman', anonymous=True)
-        rospy.Subscriber("bike_state", Float32MultiArray, bike_state)
-        rospy.Subscriber("gps", Float32MultiArray, gps)
+        rospy.Subscriber("bike_state", Float32MultiArray, self.bike_state)
+        rospy.Subscriber("gps", Float32MultiArray, self.gps)
     
-    def bike_state(data):
+    def bike_state(self, data):
         velocity = data.data[6]
         yaw = data.data[9]
         #rospy.loginfo("Velocity is %f", velocity)
         #rospy.loginfo("Yaw is %f", yaw)
         self.bike_yv = [yaw, velocity]
         
-    def gps(data):
+    def gps(self, data):
         #Important fields from data
         latitude = data.data[0] # In degrees
         longitude = data.data[1]
-        self.time_step = data.data[10]
+        self.time_step = [data.data[10]]
         #psi = data.data[7] # psi = heading in radians
         #velocity = data.data[8]
         # Converts lat long to x,y 
@@ -61,15 +61,15 @@ class Kalman(object):
         #rospy.loginfo(rospy.is_shutdown())
         #rospy.loginfo("timestep is %f", time_step)
         self.gps_xy = [x, y]
-        rospy.loginfo("gps_xy is %f, %f", x, y)
+        #rospy.loginfo("gps_xy is %f, %f", x, y)
 
 
-    def listener():
+    def listener(self):
         #rospy.spin()  
-        rate = rospy.Rate(5)
-        rospy.loginfo("gps_xy in listener is %f, %f", gps_xy[0], gps_xy[1])
-        #Run until the nodes are shutdown (end.sh run OR start.sh was killed)
+        rate = rospy.Rate(100)
+       #Run until the nodes are shutdown (end.sh run OR start.sh was killed)
         while not rospy.is_shutdown():      
+            #rospy.loginfo("gps_xy in listener is %f, %f", self.gps_xy[0], self.gps_xy[1])
             dim = [MultiArrayDimension('data', 1, 4)]
             layout = MultiArrayLayout(dim, 0)
             # The Kalman filter wants the GPS data in matrix form
