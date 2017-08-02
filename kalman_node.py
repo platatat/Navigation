@@ -47,10 +47,8 @@ def listener():
     rospy.Subscriber("bike_state", Float32MultiArray, bike_state)
     rospy.Subscriber("gps", Float32MultiArray, gps)
     #rospy.spin()  
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(5)
     #Run until the nodes are shutdown (end.sh run OR start.sh was killed)
-    while len(gps_xy) == 0:
-        pass
     while not rospy.is_shutdown():
         dim = [MultiArrayDimension('data', 1, 4)]
         layout = MultiArrayLayout(dim, 0)
@@ -104,9 +102,9 @@ def listener():
 
 if __name__ == '__main__':
     #Data from bike_state and gps respectively
-    gps_xy = [] #x,y converted from latitude and longitude from gps
-    bike_yv = [] #bike velocity and yaw
-    time_step = []
+    gps_xy = [1,1] #x,y converted from latitude and longitude from gps
+    bike_yv = [1,1] #bike velocity and yaw
+    time_step = [1]
     #kalman/gps data saved as we go for later plotting
     kalman_data = np.matrix([0])
     gps_data = []
