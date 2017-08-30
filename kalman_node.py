@@ -7,7 +7,7 @@ import subprocess
 from std_msgs.msg import Float32
 #from matplotlib import pyplot as plt
 import rospy
-import kalman_real_time
+import kalman
 import requestHandler
 from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Float32MultiArray
@@ -22,13 +22,16 @@ gps_data = []
 #state that is published to ROS
 kalman_state = []
 p_state = []
-#State used for kalman_no loop
+#State used for kalman_real_time
 kalman_state_matrix = np.matrix([0])
 p_state_matrix = np.matrix([0])
 
 class Kalman(object):
     
     def __init__(self):
+        
+        # we set initial values that would be close, but really
+        # should initialize itself
         
         self.gps_xy = [101,3]
         self.bike_yv = [1,2]
@@ -67,7 +70,7 @@ class Kalman(object):
     def listener(self):
         #rospy.spin()  
         rate = rospy.Rate(100)
-       #Run until the nodes are shutdown (end.sh run OR start.sh was killed)
+        #Run until the nodes are shutdown (end.sh run OR start.sh was killed)
         while not rospy.is_shutdown():      
             #rospy.loginfo("gps_xy in listener is %f, %f", self.gps_xy[0], self.gps_xy[1])
             dim = [MultiArrayDimension('data', 1, 4)]
@@ -94,9 +97,9 @@ class Kalman(object):
                 s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
                 #output matrix - returns a tuple - first entry - kalman state (x,y,x',y')
                 #                             - second entry - prediction error (p)
-                output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, C, s_initial, P_initial)
+                output_matrix = kalman.kalman_real_time(gps_matrix, C, s_initial, P_initial)
             else:
-                output_matrix = kalman_real_time.kalman_no_loop(gps_matrix, C, 
+                output_matrix = kalman.kalman_real_time(gps_matrix, C, 
                                                      kalman_state_matrix, p_state_matrix) 
             #rospy.loginfo(output_matrix.shape)
             kalman_state_matrix = output_matrix[0] 

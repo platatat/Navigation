@@ -5,11 +5,10 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 
-import kalman
 import requestHandler
 
-GPS_FILE = "/Users/joshuasones/Desktop/gps_2017-07-18~~02-36-30-PM-copy.csv"
-KALMAN_FILE = "/Users/joshuasones/Desktop/gps_2017-07-18~~02-36-30-PM-copy.csv"
+GPS_FILE = "/Users/joshuasones/Desktop/gps_2017-08-02~~12-46-23-PM.csv"
+KALMAN_FILE = "/Users/joshuasones/Desktop/kalman_pub_2017-08-02~~12-46-23-PM.csv"
 
 gps_data = []
 kalman_data = []
@@ -51,7 +50,7 @@ kalman_matrix = np.matrix(kalman_data)
 plt.scatter(gps_matrix[:,0], gps_matrix[:,1], c='r', edgecolors="none")
 
 # Plot the Kalman output
-plt.scatter(kalman_matrix[:,0], kalman_matrix[:,1], edgecolors="none")
+#plt.scatter(kalman_matrix[:,0], kalman_matrix[:,1], edgecolors="none")
 
 # Show everything
 plt.show()
