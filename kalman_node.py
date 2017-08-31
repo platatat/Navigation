@@ -1,11 +1,14 @@
 #!/usr/bin/env python
+"""
+This file is used for ROS communication. It allows real-time 'filtering'
+of position data on the bike by subscribing to data from different sensors (GPS + IMU).
+When testing, use "bash start.sh run_with_kalman" to run this node.
+"""
 import csv
-#import matplotlib
 import numpy as np
 import gps_assisted_simulator_node 
 import subprocess
 from std_msgs.msg import Float32
-#from matplotlib import pyplot as plt
 import rospy
 import kalman
 import requestHandler
@@ -15,7 +18,6 @@ from std_msgs.msg import MultiArrayLayout
 from std_msgs.msg import MultiArrayDimension
 
 #Data from bike_state and gps respectively
-#rospy.loginfo("This is still happening")
 #kalman/gps data saved as we go for later plotting
 kalman_data = np.matrix([0])
 gps_data = []
@@ -31,7 +33,7 @@ class Kalman(object):
     def __init__(self):
         
         # we set initial values that would be close, but really
-        # should initialize itself
+        # should initialize itself -- TODO
         
         self.gps_xy = [101,3]
         self.bike_yv = [1,2]
@@ -45,8 +47,6 @@ class Kalman(object):
     def bike_state(self, data):
         velocity = data.data[6]
         yaw = data.data[9]
-        #rospy.loginfo("Velocity is %f", velocity)
-        #rospy.loginfo("Yaw is %f", yaw)
         self.bike_yv = [yaw, velocity]
         
     def gps(self, data):
@@ -68,18 +68,18 @@ class Kalman(object):
 
 
     def listener(self):
-        #rospy.spin()  
+          
         rate = rospy.Rate(100)
         #Run until the nodes are shutdown (end.sh run OR start.sh was killed)
         while not rospy.is_shutdown():      
-            #rospy.loginfo("gps_xy in listener is %f, %f", self.gps_xy[0], self.gps_xy[1])
+            
             dim = [MultiArrayDimension('data', 1, 4)]
             layout = MultiArrayLayout(dim, 0)
+            
             # The Kalman filter wants the GPS data in matrix form
             #Build matrix from gps x,y coordinates and bike velocity and yaw
             gps_matrix = np.matrix(self.gps_xy + self.bike_yv + self.time_step)
-            #rospy.loginfo("GPS XY LISTENER ")
-            #rospy.loginfo(gps_xy)
+           
             #save gps state values for later plotting
             gps_data.append(gps_matrix)
             C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
@@ -95,34 +95,22 @@ class Kalman(object):
                 x_dot_0 = v_0 * np.cos(yaw_0)
                 y_dot_0 = v_0 * np.sin(yaw_0)
                 s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
-                #output matrix - returns a tuple - first entry - kalman state (x,y,x',y')
+                #output matrix - returns a tuple - first entry - kalman state (x,y,x_dot,y_dot)
                 #                             - second entry - prediction error (p)
                 output_matrix = kalman.kalman_real_time(gps_matrix, C, s_initial, P_initial)
             else:
                 output_matrix = kalman.kalman_real_time(gps_matrix, C, 
                                                      kalman_state_matrix, p_state_matrix) 
-            #rospy.loginfo(output_matrix.shape)
+        
             kalman_state_matrix = output_matrix[0] 
-            p_state_matrix = output_matrix[1]                                           
+            p_state_matrix = output_matrix[1]
+            
             #Change output_matrix to a standard array for publishing
             kalman_state = output_matrix[0].flatten().tolist()[0]
-            #rospy.loginfo(kalman_state)
             p_state = output_matrix[1].flatten()
-            #save predicted state values for later plotting
-            #kalman_data.append(kalman_state_matrix) 
-            #pub.publish(layout, kalman_state)
+  
             self.pub.publish(layout, kalman_state)
             rate.sleep()
-            #rospy.spin()
-        #rospy.loginfo('SUCCESSFUL ITERATION')
-        #rospy.loginfo('Test was terminated')
-        #rospy.spin()
-        # Plot the GPS data
-        #plt.scatter(gps_data[:,0], gps_data[:,1], c='r')
-        # Plot the Kalman output
-        #plt.scatter(kalman_data[:,0], kalman_data[:,1])
-        # Show everything
-        #plt.show()
 
 if __name__ == '__main__':
     Kalman().listener()
