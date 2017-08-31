@@ -1,6 +1,7 @@
-"""Script that gets location data from gps csv and speed/yaw from bike csv,
-as opposed to kalman_driver.py which only gets all data from gps"""
-
+"""
+Script that gets location and speed data from gps and yaw from IMU,
+as opposed to kalman_driver.py which gets yaw from gps as well.
+"""
 import csv
 import matplotlib
 import numpy as np

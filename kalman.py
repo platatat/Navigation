@@ -1,7 +1,14 @@
+"""
+Contains kalman filter functions that take in raw data and output filtered data.
+Originally translated from MATLAB. Math used is explained in great detail at:
+https://home.wlu.edu/~levys/kalman_tutorial/
+"""
+
 import numpy as np
 
 def kalman_retro(state, C):
-    """Kalman filter from MATLAB. Input is matrix of gps data, output is the Kalman matrix"""
+    """Kalman filter that is used to retroactively filter previously collected
+    gps data."""
     
     eye4 = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     state = np.matrix(state)
@@ -101,32 +108,3 @@ def kalman_real_time(state, C, s_current, P_current):
     P_new = (eye4 - G*C)*P_new
         
     return (s_new, P_new)
-
-if __name__ == '__main__':
-    C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-    state = np.matrix([[1,2,3,4],[5,6,7,8],[9,10,1.1,0]])
-    #print kalman_retro(state,C)
-    
-    # a = [[1,2,3,4]]
-    # a = np.matrix(a)
-    # P_current = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-    # x_pos = a[:,0]
-    # y_pos = a[:,1]
-    # yaw = a[:,2]
-    # v = a[:,3]
-    # v_0 = v.item(0)
-    # v_0 = v.item(0)
-    # yaw_0 = yaw.item(0)
-    # x_dot_0 = v_0*np.cos(yaw_0)
-    # y_dot_0 = v_0*np.sin(yaw_0)
-    # s_current = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
-    # C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
-    # ak = kalman_real_time(a, C, s_current, P_current)
-    # b = [[5,6,7,8]]
-    # bk = kalman_real_time(b, C, ak[0], ak[1])
-    # c = [[9,10,1.1,0]]
-    # ck = kalman_real_time(c, C, bk[0], bk[1])
-    # #print ak
-    # print s_current.T
-    # print ak[0].T
-    # print bk[0].T

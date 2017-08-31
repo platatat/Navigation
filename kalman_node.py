@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-Used for ROS communication. It allows real-time 'filtering'
-of position data on the bike by subscribing to data from different sensors (GPS + IMU).
-When testing, use "bash start.sh run_with_kalman" to run this node.
+Used for ROS communication. It allows real-time 'filtering' of position data
+on the bike by subscribing to data from different sensors (GPS + IMU). When
+testing, use "bash start.sh run_with_kalman" to run this node.
 """
 import csv
 import numpy as np
