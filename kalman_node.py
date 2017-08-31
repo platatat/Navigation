@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-This file is used for ROS communication. It allows real-time 'filtering'
+Used for ROS communication. It allows real-time 'filtering'
 of position data on the bike by subscribing to data from different sensors (GPS + IMU).
 When testing, use "bash start.sh run_with_kalman" to run this node.
 """

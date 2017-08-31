@@ -1,3 +1,9 @@
+"""
+Script that is used to plot raw GPS data vs. kalman-filtered data that was
+collected in real time during a test. In order to use this script, you must
+download the correct gps and kalman csv's (see testing instructions), and
+GPS_FILE and KALMAN_FILE below must be changed to the correct filepath.
+"""
 import csv
 import matplotlib
 import numpy as np
