@@ -1,11 +1,12 @@
+"""Contains functions relating to real world location data. Contains code that connects
+to web server for inputting real waypoints using Google Maps API."""
+
 import requests
 import json
 import urllib
 import math
 import numpy as np
 from itertools import groupby
-
-""" Run server """
 
 def convert(latitude, longitude):
 	""" Mercator map projection 

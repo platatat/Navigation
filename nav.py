@@ -1,4 +1,8 @@
 # nav.py
+
+"""Contians Nav class and methods that make up the navigation algorithm.
+Input for algorithm is bike state and waypoints, output is front wheel angle."""
+
 import numpy as np
 import math
 import sys

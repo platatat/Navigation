@@ -1,6 +1,10 @@
 """
-Script that gets location and speed data from gps and yaw from IMU,
-as opposed to kalman_driver.py which gets yaw from gps as well.
+Script that is used to plot raw GPS data vs. kalman-filtered data that was created
+retroactively after a test. In order to use this script, you must
+download the correct gps csv (see testing instructions), and
+GPS_FILE below must be changed to the correct filepath.
+
+Location and speed data are from gps, yaw is from IMU.
 """
 import csv
 import matplotlib

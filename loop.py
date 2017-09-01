@@ -1,3 +1,6 @@
+"""Used to plot nav simulation. Initial bikestate and waypoints can be changed
+at the bottom of the file"""
+
 import sys
 import nav
 import mapModel

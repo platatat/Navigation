@@ -1,7 +1,7 @@
 # constants.py
 import math
 
-######### mainNavigation constants
+"""Constants used in nav code"""
 
 # properties of the p struct in matlab
 G = 9.81

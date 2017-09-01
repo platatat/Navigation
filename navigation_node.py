@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# license removed for brevity
+"""Used for ROS communication. Communicates between various sensors to update bike state
+and allows navigation algorithm to run on the bike."""
+
 import rospy
 from std_msgs.msg import Int32
 from std_msgs.msg import Float32

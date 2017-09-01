@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+"""Used for ROS communication. Initializes map and waypoints"""
+
 import rospy
 import nav
 from std_msgs.msg import Float32MultiArray
