@@ -14,7 +14,7 @@ Before getting into the details of each file below, here are some important thin
 
 * All files with "_node" are used for ROS communication. Generally, these files rely on bike sensors like GPS or IMU to publish and/or subscribe to other ROS nodes. ROS can be somewhat confusing to understand at first -- for more information see the first 4-5 chapters of  [A Gentle Introduction to ROS](https://cse.sc.edu/~jokane/agitr/).
 
-* All files with "kalman" are relate to data smoothing/sensor fusion. As of now, these files use something similar to a kalman filter to get more accurate location data. Files with "kalman_driver" are just scripts that plot raw GPS vs. "filtered" location data.
+* All files with "kalman" relate to data smoothing/sensor fusion. As of now, these files use something similar to a kalman filter to get more accurate location data. The math behind the kalman filter is explained in detail [here](https://home.wlu.edu/~levys/kalman_tutorial/).
 
  ## Known Bugs
 
@@ -27,8 +27,6 @@ Before getting into the details of each file below, here are some important thin
 * [gps_assisted_simulator_node.py](#gps_assisted_simulator_node)
 * [kalman.py](#kalman)
 * [kalman_driver.py](#kalman_driver)
-* [kalman_driver_bike.py](#kalman_driver_bike)
-* [kalman_driver_real_time.py](#kalman_driver_real_time)
 * [kalman_node.py](#kalman_node)
 * [loop.py](#loop)
 * [mapModel.py](#mapModel)
