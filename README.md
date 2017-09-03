@@ -124,11 +124,37 @@ float? | angle_between_vectors(v1, v2) | Returns: angle between vectors [v1] and
 float? | angle_between_two_lines(line1, line2) | Returns: angle between [line1] and [line2]
 float? | dot_product(v1, v2) | Returns: mathematical dot product of vectors [v1] and [v2]
 array? | intersect_circle_path(path, r, c) | Returns: points of intersection between [path] and circle with radius [r] and center [c]
+
+---
+### <a name="gps_assisted_simulator_node"></a> gps_assisted_simulator_node.py
+This file is simply simulator_node.py, but it reads from the GPS ROS stream and updates its internal state based on that.
+
+Functions:
+
+Return Type | Function Signature | Description
+:-------------: |:-------------:| :-----:
+void | update_bike_from_gps(data) | Takes the incoming data from the GPS and updates our state with it
+void | update_graph(data) | 
+void | path_parse(data) |
+void | listener() |
+
+---
+### <a name="kalman"></a> kalman.py
+Contains kalman filter functions that take in raw data and output filtered data.
+Originally translated from MATLAB. Math used is explained in great detail at:
+https://home.wlu.edu/~levys/kalman_tutorial/
+
+
+Functions:
+
+Return Type | Function Signature | Description
+:-------------: |:-------------:| :-----:
+np.matrix | kalman_retro(state) | Kalman filter that is used to retroactively filter previously collected raw data.
+np.matrix array | kalman_real_time(state, s_current, P_current) | Kalman filter that can be run in real time to filter incoming raw data.		
+---
 ---
 ### <a name="loop"></a> loop.py
 Main Navigation file. Runs a loop that gets navigation command, passes it thorugh simulation, and gets the new updated state.
-
-Main loop:
 
 Functions:
 
@@ -197,20 +223,6 @@ array? | convert2(latitude, longitude) |
 array? | math_convert(latitude, longitude) | Converts latitude and longitude to local coordinates that bike can use to navigate.
 void | bearing_from_origin(origin, latitude, longitude)| potato
 void | parse_json(presets=False) | Parses JSON response from http request
-
-
----
-### <a name="gps_assisted_simulator_node"></a> gps_assisted_simulator_node.py
-This file is simply simulator_node.py, but it reads from the GPS ROS stream and updates its internal state based on that.
-
-Functions:
-
-Return Type | Function Signature | Description
-:-------------: |:-------------:| :-----:
-void | update_bike_from_gps(data) | Takes the incoming data from the GPS and updates our state with it
-void | update_graph(data) | 
-void | path_parse(data) |
-void | listener() |
 
 
 ---
