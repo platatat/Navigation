@@ -6,19 +6,22 @@ https://home.wlu.edu/~levys/kalman_tutorial/
 
 import numpy as np
 
-def kalman_retro(state):
+def kalman_retro(raw_state):
     """Kalman filter that is used to retroactively filter previously collected
-    gps data."""
+    raw data. Input raw_state is a 5x1 matrix of raw x, y, yaw, velocity, and time step data.
+    
+    Returns kalman state, which is a 4x1 matrix of filtered x, y, x_dot, and y_dot data.
+    """
     
     eye4 = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-    state = np.matrix(state)
-    rows = state.shape[0]
+    raw_state = np.matrix(raw_state)
+    rows = raw_state.shape[0]
 
-    x_pos = state[:,0]
-    y_pos = state[:,1]
-    yaw = state[:,2]
-    v = state[:,3]
-    t_step = state[:,4]
+    x_pos = raw_state[:,0]
+    y_pos = raw_state[:,1]
+    yaw = raw_state[:,2]
+    v = raw_state[:,3]
+    t_step = raw_state[:,4]
     
     v_0 = v.item(0)
     yaw_0 = yaw.item(0)
@@ -43,10 +46,10 @@ def kalman_retro(state):
         P_new = A*P_current*A.T + (np.matrix([[.0001, 0, 0 ,0], [0, .0001, 0, 0], [0,0,.0001,0], [0,0,0,.0001]]))
         
     
-        x_actual = state.item(i, 0)
-        y_actual = state.item(i, 1)
-        psi_actual = state.item(i, 2)
-        v_actual = state.item(i, 3)
+        x_actual = raw_state.item(i, 0)
+        y_actual = raw_state.item(i, 1)
+        psi_actual = raw_state.item(i, 2)
+        v_actual = raw_state.item(i, 3)
         x_dot_actual = v_actual*np.cos(psi_actual)
         y_dot_actual = v_actual*np.sin(psi_actual)
 
@@ -61,8 +64,8 @@ def kalman_retro(state):
         
     return kalman_state.T
 
-def kalman_real_time(state, s_current, P_current):
-    """Kalman filter that can be run in real time. state is a 5x1 matrix of raw
+def kalman_real_time(raw_state, s_current, P_current):
+    """Kalman filter that can be run in real time. Input raw_state is a 5x1 matrix of raw
     x, y, yaw, velocity, and time step data. s_current is the kalman state, usually taken from the
     previous call to this function, and P_current is the observation, also taken from
     previous call to function.
@@ -74,14 +77,14 @@ def kalman_real_time(state, s_current, P_current):
     #4x4 identity matrix
     eye4 = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     
-    #make sure state is a matrix
-    state = np.matrix(state)
+    #make sure raw_state is a matrix
+    raw_state = np.matrix(raw_state)
 
-    x_pos = state[:,0]
-    y_pos = state[:,1]
-    yaw = state[:,2]
-    v = state[:,3]
-    t_step = state[:,4]
+    x_pos = raw_state[:,0]
+    y_pos = raw_state[:,1]
+    yaw = raw_state[:,2]
+    v = raw_state[:,3]
+    t_step = raw_state[:,4]
     
     v_0 = v.item(0) # initial velocity
     yaw_0 = yaw.item(0) #initial yaw
@@ -96,10 +99,10 @@ def kalman_real_time(state, s_current, P_current):
     P_new = A*P_current*A.T + eye4
 
 
-    x_actual = state.item(0)
-    y_actual = state.item(1)
-    psi_actual = state.item(2)
-    v_actual = state.item(3)
+    x_actual = raw_state.item(0)
+    y_actual = raw_state.item(1)
+    psi_actual = raw_state.item(2)
+    v_actual = raw_state.item(3)
     x_dot_actual = v_actual*np.cos(psi_actual)
     y_dot_actual = v_actual*np.sin(psi_actual)
 
