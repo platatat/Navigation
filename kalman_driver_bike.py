@@ -60,8 +60,7 @@ combined_matrix = np.insert(gps_matrix, 2, bike_state_matrix.flatten(), axis=1)
 plt.scatter(combined_matrix[:,0], combined_matrix[:,1], c='r', edgecolors="none")
 
 # Run the Kalman filter
-C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
-output_matrix = kalman.kalman_retro(combined_matrix, C)
+output_matrix = kalman.kalman_retro(combined_matrix)
 
 # Plot the Kalman output
 plt.scatter(output_matrix[:,0], output_matrix[:,1], edgecolors="none")

@@ -6,7 +6,7 @@ https://home.wlu.edu/~levys/kalman_tutorial/
 
 import numpy as np
 
-def kalman_retro(state, C):
+def kalman_retro(state):
     """Kalman filter that is used to retroactively filter previously collected
     gps data."""
     
@@ -28,6 +28,7 @@ def kalman_retro(state, C):
     
     P_current = eye4
     R = np.matrix([[6.25, 0, 0, 0], [0, 6.25, 0, 0], [0,0,100,0], [0,0,0,100]])
+    C = eye4
  
     kalman_state = np.matrix(np.zeros((4,rows), dtype=float))
     
@@ -60,7 +61,7 @@ def kalman_retro(state, C):
         
     return kalman_state.T
 
-def kalman_real_time(state, C, s_current, P_current):
+def kalman_real_time(state, s_current, P_current):
     """Kalman filter that can be run in real time. state is a 5x1 matrix of raw
     x, y, yaw, velocity, and time step data. s_current is the kalman state, usually taken from the
     previous call to this function, and P_current is the observation, also taken from
@@ -87,7 +88,8 @@ def kalman_real_time(state, C, s_current, P_current):
     x_dot_0 = v_0*np.cos(yaw_0)
     y_dot_0 = v_0*np.sin(yaw_0)
     
-    A = np.matrix([[1, 0 , t_step/1000., 0], [0, 1, 0, t_step/1000.], [0, 0, 1, 0], [0, 0, 0, 1]]) 
+    A = np.matrix([[1, 0 , t_step/1000., 0], [0, 1, 0, t_step/1000.], [0, 0, 1, 0], [0, 0, 0, 1]])
+    C = eye4 
     R = 4*eye4
  
     s_new = A*s_current
@@ -102,7 +104,8 @@ def kalman_real_time(state, C, s_current, P_current):
     y_dot_actual = v_actual*np.sin(psi_actual)
 
     z = np.matrix([[x_actual], [y_actual], [x_dot_actual], [y_dot_actual]])
-        
+    
+    
     G = P_new*C.T*((C*P_new*C.T + R).I)
     s_new = s_new + G*(z - C*s_new)
     P_new = (eye4 - G*C)*P_new

@@ -82,7 +82,6 @@ class Kalman(object):
            
             #save gps state values for later plotting
             gps_data.append(gps_matrix)
-            C = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
             #If we have 
             if len(gps_data) == 1:
                 P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
@@ -97,10 +96,9 @@ class Kalman(object):
                 s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
                 #output matrix - returns a tuple - first entry - kalman state (x,y,x_dot,y_dot)
                 #                             - second entry - prediction error (p)
-                output_matrix = kalman.kalman_real_time(gps_matrix, C, s_initial, P_initial)
+                output_matrix = kalman.kalman_real_time(gps_matrix, s_initial, P_initial)
             else:
-                output_matrix = kalman.kalman_real_time(gps_matrix, C, 
-                                                     kalman_state_matrix, p_state_matrix) 
+                output_matrix = kalman.kalman_real_time(gps_matrix, kalman_state_matrix, p_state_matrix) 
         
             kalman_state_matrix = output_matrix[0] 
             p_state_matrix = output_matrix[1]
