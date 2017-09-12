@@ -26,8 +26,8 @@ Before getting into the details of each file below, here are some important thin
 * [geometry.py](#geometry)
 * [gps_assisted_simulator_node.py](#gps_assisted_simulator_node)
 * [kalman.py](#kalman)
-* [kalman_driver.py](#kalman_driver)
-* [kalman_node.py](#kalman_node)
+* [kalman_driver.py](#kalman_driver) //TODO
+* [kalman_node.py](#kalman_node) //TODO
 * [loop.py](#loop)
 * [mapModel.py](#mapModel)
 * [map_node.py](#map_node)
@@ -144,6 +144,7 @@ Contains kalman filter functions that take in raw data and output filtered data.
 Originally translated from MATLAB. Math used is explained in great detail at:
 https://home.wlu.edu/~levys/kalman_tutorial/
 
+//TODO: describe function inputs/outputs more clearly
 
 Functions:
 
