@@ -46,4 +46,4 @@ LOOKAHEAD_ANGLE_GAIN = 4
 MIN_TURN_RADIUS = 7.0 # determined with the simulation by setting steering angle to MAX_STEER
 
 ## Visualization constants
-ANIM_INTERVAL = 0 # milliseconds between blit frames
+ANIM_INTERVAL = 10 # timer control for the drawing/animation loop
