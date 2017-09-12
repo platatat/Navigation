@@ -121,7 +121,7 @@ def loop_pyqtgraph(nav, bike, map_model):
 	
 	anim_timer = QtCore.QTimer()
 	anim_timer.timeout.connect(update)
-	anim_timer.start(0)
+	anim_timer.start(ANIM_INTERVAL)
 
 	QtGui.QApplication.instance().exec_()
 

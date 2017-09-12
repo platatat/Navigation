@@ -23,6 +23,13 @@ class Nav(object):
 		self.lookahead_point = (0, 0)
 		self.dropped_point = (0, 0)
 
+		# State for PID controller
+		self.last_dist_error = 0
+		self.last_ang_error = 0
+
+		# Timing for PID controller
+		self.dt = 0.01
+
 		# State for turn lookaheads
 		self.first_segment = True
 
@@ -80,21 +87,29 @@ class Nav(object):
 		Finds and returns the closest path to the given point
 		from the list of paths (stored in self.map_model.paths)
 		"""
-		closest_distance = sys.maxint
-		closest_path = 0
-		for path_index, path in enumerate(self.map_model.paths):
-			nearest_pt = geometry.nearest_point_on_path(path, point)
-			distance_to_bike = geometry.distance(nearest_pt, point)
-			if (closest_distance > distance_to_bike):
-				closest_distance = distance_to_bike
-				closest_path = path_index
-				return closest_path
+	        # Make a list of paths with indices: [(0, path 1), ...]
+		indexed_paths = enumerate(self.map_model.paths)
+
+                def dist_to_bike(path):
+                    """Returns the distance between a path and the given point"""
+                    nearest_pt = geometry.nearest_point_on_path(path, point)
+                    return geometry.distance(nearest_pt, point)
+
+                # Get the path with the smallest distance from the point
+		min_index, min_dist = min(indexed_paths, key=lambda p: dist_to_bike(p[1]))
+
+		return min_index
 
 	def pid_controller(self):
 		"""
 		Two parts here: a regular PID controller, and a
 		component that detects when a turn is coming up so we
 		can start turning early.
+
+		Two field state variables used, besides bike:
+		self.last_dist_error and self.last_ang_error, which
+		store the last errors in distance and angle,
+		respectively.
 		"""
 
 		bike = self.map_model.bike
@@ -136,10 +151,13 @@ class Nav(object):
 		while abs(angle_diff) > math.pi:
 			angle_diff -= math.copysign(2 * math.pi, angle_diff)
 
-		# Debug statement to show the data going into each
-		# contribution
-		print("signed_dist = {:.4f}\tangle_diff = {:.4f}"
-			.format(signed_dist, angle_diff))
+		# Derivative term for distance
+		d_dist_contrib = (signed_dist - self.last_dist_error) / self.dt
+		d_dist_contrib *= PID_D_DIST_GAIN
+
+		# Derivative term for angle
+		d_ang_contrib = (angle_diff - self.last_ang_error) / self.dt
+		d_ang_contrib *= PID_D_ANG_GAIN
 
 		# Emphasize distance further away from the path
 		distance_gain = (PID_DIST_GAIN *
@@ -148,17 +166,12 @@ class Nav(object):
 			math.tanh(signed_dist))
 
 		# If we're right next to the path, emphasize the angle
-		angle_gain = (1.5 if (abs(signed_dist) > 1.5) else 1.8)
+		angle_gain = PID_ANGLE_GAIN
+		if abs(signed_dist) > 1.5:
+			angle_gain *= 1.2
 		angle_contribution = angle_gain * angle_diff
 		next_turn_contribution = (NEXT_TURN_GAIN *
 			self.create_lookahead_correction(path, bike))
-
-		# If we're turning, the turn takes priority over other
-		# contributions
-		if next_turn_contribution:
-			distance_contribution = 0
-			angle_contribution = 0
-
 
 		# Debug statement to show each contribution
 		describe_angle = lambda angle: "right" if angle > 0 else "left"
@@ -169,8 +182,18 @@ class Nav(object):
 			next_turn_contribution,
 			describe_angle(next_turn_contribution)))
 
-		steerD = (distance_contribution + angle_contribution +
-			next_turn_contribution)
+		# If we're turning, the turn takes priority over other
+		# contributions
+		if next_turn_contribution:
+			steerD = next_turn_contribution
+		else:
+			steerD = (distance_contribution + angle_contribution +
+					d_dist_contrib + d_ang_contrib)
+
+		# Store current errors in state variables
+		self.last_dist_error = signed_dist
+		self.last_ang_error = angle_diff
+
 		return self.clamp_steer_angle(steerD)
 
 	def create_lookahead_correction(self, current_path, bike):

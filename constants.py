@@ -28,7 +28,9 @@ MAX_STEER = math.pi/6.0
 # PID with cutting
 MAX_ACCEPTABLE_ANGLE_DIFF = math.pi / 4.0
 PID_DIST_GAIN = 1.0
-PID_ANGLE_GAIN = 2.0
+PID_ANGLE_GAIN = 1.5
+PID_D_DIST_GAIN = 0.1
+PID_D_ANG_GAIN = 0.1
 RAD_TO_DEG = 180.0 / math.pi
 TURN_LOOKAHEAD_DIST = 7
 NEXT_TURN_GAIN = 1
@@ -44,4 +46,4 @@ LOOKAHEAD_ANGLE_GAIN = 4
 MIN_TURN_RADIUS = 7.0 # determined with the simulation by setting steering angle to MAX_STEER
 
 ## Visualization constants
-ANIM_INTERVAL = 0 # milliseconds between blit frames
+ANIM_INTERVAL = 10 # timer control for the drawing/animation loop
