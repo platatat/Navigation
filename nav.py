@@ -80,15 +80,18 @@ class Nav(object):
 		Finds and returns the closest path to the given point
 		from the list of paths (stored in self.map_model.paths)
 		"""
-		closest_distance = sys.maxint
-		closest_path = 0
-		for path_index, path in enumerate(self.map_model.paths):
-			nearest_pt = geometry.nearest_point_on_path(path, point)
-			distance_to_bike = geometry.distance(nearest_pt, point)
-			if (closest_distance > distance_to_bike):
-				closest_distance = distance_to_bike
-				closest_path = path_index
-				return closest_path
+	        # Make a list of paths with indices: [(0, path 1), ...]
+		indexed_paths = enumerate(self.map_model.paths)
+
+                def dist_to_bike(path):
+                    """Returns the distance between a path and the given point"""
+                    nearest_pt = geometry.nearest_point_on_path(path, point)
+                    return geometry.distance(nearest_pt, point)
+
+                # Get the path with the smallest distance from the point
+		min_index, min_dist = min(indexed_paths, key=lambda p: dist_to_bike(p[1]))
+
+		return min_index
 
 	def pid_controller(self):
 		"""
