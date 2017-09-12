@@ -88,7 +88,7 @@ class Nav(object):
 			if (closest_distance > distance_to_bike):
 				closest_distance = distance_to_bike
 				closest_path = path_index
-                return closest_path
+				return closest_path
 
 	def pid_controller(self):
 		"""
