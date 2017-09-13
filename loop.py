@@ -52,6 +52,7 @@ def loop_pyqtgraph(nav, bike, map_model):
 
 	# This ViewBox will hold the bike and trajectory
 	viewbox = qt_win.addPlot(col=0, row=0, lockAspect=1.0)
+	viewbox.setAspectLocked()
 	viewbox.sigResized = viewbox.sigRangeChanged # Axes need this method
 	viewbox.showAxis("bottom", show=True)
 
@@ -316,14 +317,21 @@ def find_display_bounds(waypoints):
 
 if __name__ == '__main__':
 	new_bike = bikeState.Bike(0, 0, 0.1, 0, 0, 0, 3.57)
+	PATHS = [
+		[(0,0), (20, 5), (40, 5)],
+		[(0,0), (50, 0)],
+		[(0,0), (20, 5), (40, -5), (60, 10), (100, -20), (40, -50), (0,-10), (0, 0)],
+		[(40, 0), (20, -10), (0, 0)],
+		[(0,0), (50, 0), (50, 50), (0, 50), (0,0)],
+		[(0, 0), (10, 0), (20, 5), (25, 15), (12, 20), (0, 15), (0, 0)],
+		[(0, 0), (20, 0), (40, 10), (50, 30), (24, 40), (0, 30), (0, 0)]
+	]
+	if len(sys.argv) < 2 or not sys.argv[1].isdigit() or int(sys.argv[1]) >= len(PATHS):
+		print("USAGE: {} [PATH_INDEX]\nwhere PATH_INDEX ranges from 0 to {}".format(sys.argv[0], len(PATHS) - 1))
+		sys.exit(1)
+	print(sys.argv)
 	# waypoints = requestHandler.parse_json(True)
-	#waypoints = [(0,0), (20, 5), (40, 5)]
-	#waypoints = [(0,0), (50, 0)]
-	#waypoints = [(0,0), (20, 5), (40, -5), (60, 10), (100, -20), (40, -50), (0,-10), (0, 0)]
-	#waypoints = [(40, 0), (20, -10), (0, 0)]
-	#waypoints = [(0,0), (50, 0), (50, 50), (0, 50), (0,0)]
-	#waypoints = [(0, 0), (10, 0), (20, 5), (25, 15), (12, 20), (0, 15), (0, 0)]
-	waypoints = [(0, 0), (20, 0), (40, 10), (50, 30), (24, 40), (0, 30), (0, 0)]
+	waypoints = PATHS[int(sys.argv[1])]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 	# print "PATHS", new_nav.map_model.paths

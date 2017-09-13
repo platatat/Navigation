@@ -26,6 +26,7 @@ class Nav(object):
 		# State for PID controller
 		self.last_dist_error = 0
 		self.last_ang_error = 0
+		self.dist_error_integral = 0
 
 		# Timing for PID controller
 		self.dt = 0.01
@@ -60,7 +61,7 @@ class Nav(object):
 				angle_diff -= math.copysign(2 * math.pi,
 					angle_diff)
 
-			# angle_diff < 90 -> use sin-based formula
+			# pick formula based on angle_diff
 			angle_diff = abs(angle_diff)
 			curr_factor = 1
 			if angle_diff < math.pi / 2:
@@ -159,6 +160,10 @@ class Nav(object):
 		d_ang_contrib = (angle_diff - self.last_ang_error) / self.dt
 		d_ang_contrib *= PID_D_ANG_GAIN
 
+		# Integral term for distance
+		self.dist_error_integral += signed_dist * self.dt
+		i_dist_contrib = PID_I_DIST_GAIN * self.dist_error_integral
+
 		# Emphasize distance further away from the path
 		distance_gain = (PID_DIST_GAIN *
 			(2 if (abs(signed_dist) > 3) else 1))
@@ -168,7 +173,7 @@ class Nav(object):
 		# If we're right next to the path, emphasize the angle
 		angle_gain = PID_ANGLE_GAIN
 		if abs(signed_dist) > 1.5:
-			angle_gain *= 1.2
+			angle_gain *= 1.05
 		angle_contribution = angle_gain * angle_diff
 		next_turn_contribution = (NEXT_TURN_GAIN *
 			self.create_lookahead_correction(path, bike))
@@ -188,7 +193,8 @@ class Nav(object):
 			steerD = next_turn_contribution
 		else:
 			steerD = (distance_contribution + angle_contribution +
-					d_dist_contrib + d_ang_contrib)
+					d_dist_contrib + d_ang_contrib +
+					i_dist_contrib)
 
 		# Store current errors in state variables
 		self.last_dist_error = signed_dist
