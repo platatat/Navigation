@@ -25,7 +25,36 @@ def get_sign(v):
 	else:
 		return v/np.abs(v)
 
-def nearest_point_on_path(path,point):
+def nearest_point_on_path(path, point):
+	""" Returns: the nearest point on the [path] to the [point] """
+	point1 = path[0]
+	point2 = path[1]
+	dist = distance(point1, point2)
+	d2 = dist2(point1, point2)
+	if (d2 != 0):
+		# print 'D2 IS ', d2
+		# print "HELLO"
+		# print "point is ", point
+		# print "point1 is ", point1
+		summ = ((point[0] - point1[0])*(point2[0]-point1[0]) + (point[1] - point1[1]) * (point2[1] - point1[1]))
+		# print "summmm is ", summ
+		t = summ/d2
+		# print "D2 AFTER IS", d2
+		# print "t IS !!!!!!!!!", t
+	else:
+		t = 0
+	if (t < 0):
+		return point1
+	elif (t > 1):
+		return point2
+	elif (t == 0):
+		return point
+	else:
+		x = point1[0] + t * (point2[0]-point1[0])
+		y = point1[1] + t * (point2[1]-point1[1])
+		return (x, y)
+
+def nearest_point_on_path2(path,point):
 	""" Returns: the nearest point on the [path] to the [point].
 	https://math.stackexchange.com/questions/322831/determing-the-distance-from-a-line-segment-to-a-point-in-3-space"""
 	q = point

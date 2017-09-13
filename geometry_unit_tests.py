@@ -47,7 +47,7 @@ class TestGeometry(unittest.TestCase):
         self.assertEquals(result3, -1)
         self.assertEquals(result4, -1)
     
-    def test_nearest_point_on_path(self):
+    def test_nearest_point_on_path2(self):
         path = [(0,1), (5,1)]
         point1 = (1,1) #d2 = 0, t = 0
         point2 = (-10, -40) #t < 0
