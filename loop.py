@@ -317,23 +317,30 @@ def find_display_bounds(waypoints):
 
 if __name__ == '__main__':
 	new_bike = bikeState.Bike(0, 0, 0.1, 0, 0, 0, 3.57)
-	PATHS = [
-		[(0,0), (20, 5), (40, 5)],
-		[(0,0), (50, 0)],
-		[(0,0), (20, 5), (40, -5), (60, 10), (100, -20), (40, -50), (0,-10), (0, 0)],
-		[(40, 0), (20, -10), (0, 0)],
-		[(0,0), (50, 0), (50, 50), (0, 50), (0,0)],
-		[(0, 0), (10, 0), (20, 5), (25, 15), (12, 20), (0, 15), (0, 0)],
-		[(0, 0), (20, 0), (40, 10), (50, 30), (24, 40), (0, 30), (0, 0)]
-	]
-	if len(sys.argv) < 2 or not sys.argv[1].isdigit() or int(sys.argv[1]) >= len(PATHS):
-		print("USAGE: {} [PATH_INDEX]\nwhere PATH_INDEX ranges from 0 to {}".format(sys.argv[0], len(PATHS) - 1))
+
+	# Define some preset paths
+	PATHS = {
+			"0": [(0,0), (20, 5), (40, 5)],
+			"1": [(0,0), (50, 0)],
+			"2": [(0,0), (20, 5), (40, -5), (60, 10), (100, -20), (40, -50), (0,-10), (0, 0)],
+			"3": [(40, 0), (20, -10), (0, 0)],
+			"4": [(0,0), (50, 0), (50, 50), (0, 50), (0,0)],
+			"5hard": [(0, 0), (10, 0), (20, 5), (25, 15), (12, 20), (0, 15), (0, 0)],
+			"5easy": [(0, 0), (20, 0), (40, 10), (50, 30), (24, 40), (0, 30), (0, 0)]
+		}
+
+	# Validate arguments
+	if len(sys.argv) < 2 or (sys.argv[1] not in PATHS and not sys.argv[1].startswith("angle")):
+		print("USAGE: {} [PATH_NAME]\nwhere PATH_NAME is one of: {}\nPATH_NAME can also be 'angle[NUMBER]', such as angle90 for a map with a 90-degree turn".format(sys.argv[0], ", ".join(PATHS.keys())))
 		sys.exit(1)
-	print(sys.argv)
+
 	# waypoints = requestHandler.parse_json(True)
-	waypoints = PATHS[int(sys.argv[1])]
+	if sys.argv[1].startswith("angle"):
+		path_angle = math.radians(int(sys.argv[1][5:]))
+		waypoints = [(0,0), (20,0), (20*(1+math.cos(path_angle)),20*math.sin(path_angle))]
+	else:
+		waypoints = PATHS[sys.argv[1]]
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
-	# print "PATHS", new_nav.map_model.paths
 
 	get_loop_function()(new_nav, new_bike, new_map_model)

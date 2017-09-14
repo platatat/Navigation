@@ -23,6 +23,10 @@ PAUSE = TIMESTEP
 # used in converting output of nav to steerD
 MAX_STEER = math.pi/6.0
 
+# Generic math
+RAD_TO_DEG = 180.0 / math.pi
+DEG_TO_RAD = math.pi / 180.0
+
 ## Nav algo constants
 
 # Normal controller
@@ -32,7 +36,6 @@ PID_ANGLE_GAIN = 1.5
 PID_D_DIST_GAIN = 0.2
 PID_D_ANG_GAIN = 0.3
 PID_I_DIST_GAIN = 0
-RAD_TO_DEG = 180.0 / math.pi
 TURN_LOOKAHEAD_DIST = 7
 NEXT_TURN_GAIN = 1
 

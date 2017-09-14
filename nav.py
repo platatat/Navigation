@@ -11,6 +11,9 @@ import bikeState
 import mapModel
 from constants import *
 
+# DEBUGGING PRINT STATEMENTS
+DEBUG_PRINT_CONTRIBS = False
+
 class Nav(object):
 
 
@@ -38,7 +41,6 @@ class Nav(object):
 
 		# Precompute when we need to turn
 		self.lookahead_distances = [0] * num_paths
-		self.lookahead_factors = [0] * num_paths
 		for index, curr_segment in enumerate(self.map_model.paths):
 
 			# Compute angle between current segment and +x-axis
@@ -64,12 +66,27 @@ class Nav(object):
 			# pick formula based on angle_diff
 			angle_diff = abs(angle_diff)
 			curr_factor = 1
+
+			# If the angle is less than 90 degrees...
 			if angle_diff < math.pi / 2:
+
+				# use the sin-based formula
 				curr_factor = math.sin(angle_diff)
 			else:
+
+				# use the tan-based formula
 				curr_factor = math.tan(angle_diff / 2)
-			self.lookahead_factors[index] = curr_factor
+
+			# We just calculated a factor, so multiply that
+			# by the minimum turning radius
 			curr_lookahead = MIN_TURN_RADIUS * curr_factor
+
+			# If the angle is greater than 45 degrees, subtract some
+			if math.pi / 4 < angle_diff < math.pi / 2:
+				curr_lookahead -= 0.5
+			if math.pi / 6 < angle_diff < math.pi / 4:
+				curr_lookahead -= 0.25
+
 			print("{} => {}".format(abs(angle_diff) * RAD_TO_DEG,
 				curr_lookahead))
 			self.lookahead_distances[index] = curr_lookahead
@@ -179,13 +196,14 @@ class Nav(object):
 			self.create_lookahead_correction(path, bike))
 
 		# Debug statement to show each contribution
-		describe_angle = lambda angle: "right" if angle > 0 else "left"
-		print(("dist = {:.4f} ({})\tangle = {:.4f} ({})\t" +
-			"next_turn = {:.4f} ({})").format(distance_contribution,
-			describe_angle(distance_contribution),
-			angle_contribution, describe_angle(angle_contribution),
-			next_turn_contribution,
-			describe_angle(next_turn_contribution)))
+		if DEBUG_PRINT_CONTRIBS:
+			describe_angle = lambda angle: "right" if angle > 0 else "left"
+			print(("dist = {:.4f} ({})\tangle = {:.4f} ({})\t" +
+				"next_turn = {:.4f} ({})").format(distance_contribution,
+				describe_angle(distance_contribution),
+				angle_contribution, describe_angle(angle_contribution),
+				next_turn_contribution,
+				describe_angle(next_turn_contribution)))
 
 		# If we're turning, the turn takes priority over other
 		# contributions
@@ -255,7 +273,7 @@ class Nav(object):
 			return math.copysign(MAX_STEER, -segment_angle_diff)
 		elif (not self.first_segment and
 			dist_from_start < prev_lookahead_distance):
-			
+
 			# Find the angle between this segment and the
 			# previous one
 			prev_seg = self.map_model.paths[prev_seg_index]
