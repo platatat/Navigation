@@ -47,28 +47,57 @@ class TestGeometry(unittest.TestCase):
         self.assertEquals(result3, -1)
         self.assertEquals(result4, -1)
     
-    def test_nearest_point_on_path2(self):
-        path = [(0,1), (5,1)]
+    def test_nearest_point_on_path(self):
+        path = [(-1,1), (5,1)]
         point1 = (1,1) #d2 = 0, t = 0
         point2 = (-10, -40) #t < 0
         point3 = (10, 40) #t > 1
         point4 = (2,2)
+        point5 = (2,-1)
         
         result1 = geometry.nearest_point_on_path(path, point1)
         result2 = geometry.nearest_point_on_path(path, point2)
         result3 = geometry.nearest_point_on_path(path, point3)
         result4 = geometry.nearest_point_on_path(path, point4)
+        result5 = geometry.nearest_point_on_path(path, point5)
         
         np.testing.assert_array_almost_equal(result1, (1,1))
-        np.testing.assert_array_almost_equal(result2, (0,1))
+        np.testing.assert_array_almost_equal(result2, (-1,1))
         np.testing.assert_array_almost_equal(result3, (5,1))
         np.testing.assert_array_almost_equal(result4, (2,1))
+        np.testing.assert_array_almost_equal(result5, (2,1))
         
         path2 = [(0,0), (0,0)]
         point = (-10, 18.3902)
-        result5 = geometry.nearest_point_on_path(path2,point)
+        result6 = geometry.nearest_point_on_path2(path2,point)
         
-        np.testing.assert_array_almost_equal(result5, (0,0))
+        np.testing.assert_array_almost_equal(result6, (0,0))
+    
+    def test_nearest_point_on_path2(self):
+        path = [(-1,1), (5,1)]
+        point1 = (1,1) #d2 = 0, t = 0
+        point2 = (-10, -40) #t < 0
+        point3 = (10, 40) #t > 1
+        point4 = (2,2)
+        point5 = (2,-1)
+        
+        result1 = geometry.nearest_point_on_path2(path, point1)
+        result2 = geometry.nearest_point_on_path2(path, point2)
+        result3 = geometry.nearest_point_on_path2(path, point3)
+        result4 = geometry.nearest_point_on_path2(path, point4)
+        result5 = geometry.nearest_point_on_path2(path, point5)
+        
+        np.testing.assert_array_almost_equal(result1, (1,1))
+        np.testing.assert_array_almost_equal(result2, (-1,1))
+        np.testing.assert_array_almost_equal(result3, (5,1))
+        np.testing.assert_array_almost_equal(result4, (2,1))
+        np.testing.assert_array_almost_equal(result5, (2,1))
+        
+        path2 = [(0,0), (0,0)]
+        point = (-10, 18.3902)
+        result6 = geometry.nearest_point_on_path2(path2,point)
+        
+        np.testing.assert_array_almost_equal(result6, (0,0))
         
     def test_angle_from_path(self):
         p1 = (0,0)
