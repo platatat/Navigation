@@ -1,3 +1,4 @@
+"""Module for testing nav.py functions"""
 import unittest
 import bikeState
 import mapModel
