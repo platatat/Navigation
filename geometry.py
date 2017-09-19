@@ -55,31 +55,9 @@ def nearest_point_on_path(path,point):
 	else:
 		return np.array(p2)
 
-def angle_from_path(bike_direction, p1, p2):
-	""" [angle_from_path] returns the angle that the bicycle has to turn to 
-	be perpendicular to the line defined by [p1] and [p2] as well as if
-	it has to turn clockwise or counterclockwise """
-	bike_vector = (math.cos(bike_direction), math.sin(bike_direction))
-	path_vector = (p2[0]-p1[0], p2[1]-p1[1])
-	dot_product = bike_vector[0]*path_vector[0] + bike_vector[1]*path_vector[1]
-	angle = get_sign(dot_product)*math.acos(dot_product/distance(p1, p2))
-	return angle
-
-
-def distance_from_path(point, target_path):
+def distance_from_path(path, point):
 	""" [distance_from_path] calculates the distance from [point] to [target_path] """
-	# if target_path is None:
-	#	target_path = self.target_path
-	p1 = np.array(target_path[0])
-	v = unit_vector(target_path[0], target_path[1])
-	if v[0] == 0:
-		sign = get_sign(v[1])
-		return	sign*(p1[0] - point[0])
-	v_perp = np.array([v[1], -1*v[0]])
-	bike_coords = np.array(point)
-	r = p1 - bike_coords
-	dist = np.sum(v_perp*r)
-	return dist
+	return distance(point, nearest_point_on_path(path, point))
 
 def line_slope(line):
 	""" Returns: slope of [line] """
