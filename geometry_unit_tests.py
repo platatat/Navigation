@@ -51,19 +51,19 @@ class TestGeometry(unittest.TestCase):
         path = [(-1,1), (5,1)]
         
         point1 = (1,1)
-        result1 = geometry.nearest_point_on_path2(path, point1)
+        result1 = geometry.nearest_point_on_path(path, point1)
         
         point2 = (-10, -40)
-        result2 = geometry.nearest_point_on_path2(path, point2)
+        result2 = geometry.nearest_point_on_path(path, point2)
         
         point3 = (10, 40)
-        result3 = geometry.nearest_point_on_path2(path, point3)
+        result3 = geometry.nearest_point_on_path(path, point3)
         
         point4 = (2,2)
-        result4 = geometry.nearest_point_on_path2(path, point4)
+        result4 = geometry.nearest_point_on_path(path, point4)
         
         point5 = (2,-1)
-        result5 = geometry.nearest_point_on_path2(path, point5)
+        result5 = geometry.nearest_point_on_path(path, point5)
         
         np.testing.assert_array_almost_equal(result1, (1,1))
         np.testing.assert_array_almost_equal(result2, (-1,1))
@@ -73,11 +73,24 @@ class TestGeometry(unittest.TestCase):
         
         path2 = [(0,0), (0,0)]
         point = (-10, 18.3902)
-        result6 = geometry.nearest_point_on_path2(path2,point)
+        result6 = geometry.nearest_point_on_path(path2,point)
         
         np.testing.assert_array_almost_equal(result6, (0,0))
-        
-        
     
+    def test_distance_from_path(self):
+        path = [(-1,1), (5,1)]
+        
+        point1 = (1,1)
+        result1 = geometry.distance_from_path(path, point1)
+        expected1 = 0
+        
+        point2 = (0,0)
+        result2 = geometry.distance_from_path(path, point2)
+        expected2 = 1
+        
+        point3 = (-10, -40)
+        result2 = geometry.distance_from_path(path, point3)
+        expected3 = 41.976183723630712
+        
 if __name__ == '__main__':
     unittest.main()

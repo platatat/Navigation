@@ -55,24 +55,9 @@ def nearest_point_on_path(path,point):
 	else:
 		return p2
 
-def distance_from_path(point, target_path):
+def distance_from_path(path, point):
 	""" [distance_from_path] calculates the distance from [point] to [target_path] """
-	# if target_path is None:
-	#	target_path = self.target_path
-	p1 = np.array(target_path[0])
-	v = unit_vector(target_path[0], target_path[1])
-	if v[0] == 0:
-		sign = get_sign(v[1])
-		return	sign*(p1[0] - point[0])
-	v_perp = np.array([v[1], -1*v[0]])
-	bike_coords = np.array(point)
-	r = p1 - bike_coords
-	dist = np.sum(v_perp*r)
-	return dist
-
-def distance_from_path2(point, target_path):
-	""" [distance_from_path] calculates the distance from [point] to [target_path] """
-	return distance(point, nearest_point_on_path2(target_path,point))
+	return distance(point, nearest_point_on_path(path, point))
 
 def line_slope(line):
 	""" Returns: slope of [line] """
