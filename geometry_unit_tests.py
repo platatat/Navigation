@@ -48,6 +48,8 @@ class TestGeometry(unittest.TestCase):
         self.assertEquals(result4, -1)
     
     def test_nearest_point_on_path(self):
+        p = geometry.nearest_point_on_path
+
         path = [(-1,1), (5,1)]
         point1 = (1,1) #d2 = 0, t = 0
         point2 = (-10, -40) #t < 0
@@ -55,11 +57,11 @@ class TestGeometry(unittest.TestCase):
         point4 = (2,2)
         point5 = (2,-1)
         
-        result1 = geometry.nearest_point_on_path(path, point1)
-        result2 = geometry.nearest_point_on_path(path, point2)
-        result3 = geometry.nearest_point_on_path(path, point3)
-        result4 = geometry.nearest_point_on_path(path, point4)
-        result5 = geometry.nearest_point_on_path(path, point5)
+        result1 = p(path, point1)
+        result2 = p(path, point2)
+        result3 = p(path, point3)
+        result4 = p(path, point4)
+        result5 = p(path, point5)
         
         np.testing.assert_array_almost_equal(result1, (1,1))
         np.testing.assert_array_almost_equal(result2, (-1,1))
@@ -69,9 +71,16 @@ class TestGeometry(unittest.TestCase):
         
         path2 = [(0,0), (0,0)]
         point = (-10, 18.3902)
-        result6 = geometry.nearest_point_on_path(path2,point)
+        result6 = p(path2,point)
         
         np.testing.assert_array_almost_equal(result6, (0,0))
+
+        path_vertical = [(0,0),(0,50)]
+        point_on_vert_path = (0,1)
+        point_off_vert_path = (1,1)
+
+        np.testing.assert_array_almost_equal(p(path_vertical, point_on_vert_path), (0, 1))
+        np.testing.assert_array_almost_equal(p(path_vertical, point_off_vert_path), (0, 1))
         
     def test_angle_from_path(self):
         p1 = (0,0)
@@ -79,7 +88,6 @@ class TestGeometry(unittest.TestCase):
         bike_direction = math.pi/4
         result = geometry.angle_from_path(bike_direction, p1, p2)
         expected = 7*math.sqrt(58)/58
-        print("test")
         #self.assertEquals(result, expected)
     
 if __name__ == '__main__':

@@ -33,7 +33,7 @@ def nearest_point_on_path(path,point):
 	p2 = path[1]
 
 	# u is the vector representing the path
-	u = (p2[0]-p1[0], p2[1]-p2[1])
+	u = (p2[0]-p1[0], p2[1]-p1[1])
 
 	# v is the vector from the start point to the other point
 	v = (q[0]-p1[0], q[1]-p1[1])
@@ -51,9 +51,9 @@ def nearest_point_on_path(path,point):
 	if t >=0 and t <= 1:
 		return p
 	elif t < 0:
-		return p1
+		return np.array(p1)
 	else:
-		return p2
+		return np.array(p2)
 
 def angle_from_path(bike_direction, p1, p2):
 	""" [angle_from_path] returns the angle that the bicycle has to turn to 
