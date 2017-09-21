@@ -16,6 +16,11 @@ import numpy as np
 # Decide which visualization function to use based on imports.
 get_loop_function = lambda: lambda nav, bike, map_model: None
 try:
+	# If sys.argv contains "--video", we're gonna need matplotlib
+	# instead, so deliberately create an ImportError to move on
+	if "--video" in sys.argv:
+		import module_that_does_not_exist
+
 	import pyqtgraph as pg
 	from pyqtgraph.Qt import QtGui, QtCore
 	get_loop_function = lambda: loop_pyqtgraph
@@ -176,9 +181,12 @@ def loop_matplotlib(nav, bike, map_model):
 		# if new state has new target path then recalculate delta
 		bike.update(bikeSim.new_state(bike, steerD))
 
-def loop_matplotlib_blitting(nav, bike, map_model, blitting=True):
+def loop_matplotlib_blitting(nav, bike, map_model, blitting=True, filename=None):
 	"""This code uses blitting and callbacks to simulate the
-	bike."""
+	bike. Because so much of the code is shared, this function, when
+	provided with the filename argument, will save video to the
+	specified filename instead of displaying the animation in a
+	window."""
 	figure, axes = plt.figure(), plt.axes(**find_display_bounds(map_model.waypoints))
 
 	# Square aspect ratio for the axes
@@ -213,16 +221,16 @@ def loop_matplotlib_blitting(nav, bike, map_model, blitting=True):
 	add_traj_y = bike_traj_y.append
 
 	# Create lookahead point
-	lookahead_polygon = Circle((bike.xB, bike.yB), 1)
-	axes.add_artist(lookahead_polygon)
+	#lookahead_polygon = Circle((bike.xB, bike.yB), 1)
+	#axes.add_artist(lookahead_polygon)
 
 	# Create dropped point
-	dropped_polygon = Circle((bike.xB, bike.yB), 1, fc="red")
-	axes.add_artist(dropped_polygon)
+	#dropped_polygon = Circle((bike.xB, bike.yB), 1, fc="red")
+	#axes.add_artist(dropped_polygon)
 
 	# Create current line highlight
-	current_line = axes.plot([0, 0], [0, 0], "r")[0]
-	axes.add_artist(current_line)
+	#current_line = axes.plot([0, 0], [0, 0], "r")[0]
+	#axes.add_artist(current_line)
 
 	# Set up resizing handlers
 	listener_id = [None]
@@ -232,8 +240,8 @@ def loop_matplotlib_blitting(nav, bike, map_model, blitting=True):
 		canvas.draw()
 		listener_id[0] = canvas.mpl_connect("draw_event", grab_background)
 	def grab_background(event=None):
-		transient_polygons = (bike_polygon, lookahead_polygon,
-				      current_line, dropped_polygon)
+		#transient_polygons = (bike_polygon, lookahead_polygon, current_line, dropped_polygon)
+		transient_polygons = (bike_polygon,)
 		for polygon in transient_polygons:
 			polygon.set_visible(False)
 		safe_draw()
@@ -252,7 +260,7 @@ def loop_matplotlib_blitting(nav, bike, map_model, blitting=True):
 	get_steering_angle = nav.get_steering_angle
 	simulation_step = lambda angle: bike.update(bikeSim.new_state(bike, angle))
 	figure_blit = figure.canvas.blit
-	def full_step():
+	def full_step(data=None):
 		figure_restore(background[0])
 		simulation_step(get_steering_angle())
 
@@ -272,27 +280,30 @@ def loop_matplotlib_blitting(nav, bike, map_model, blitting=True):
 		axes.draw_artist(bike_trajectory_polygon)
 
 		# Update and redraw lookahead point
-		lookahead_polygon.center = nav.lookahead_point
+		#lookahead_polygon.center = nav.lookahead_point
 		#axes.draw_artist(lookahead_polygon)
 
 		# Update and redraw dropped point
-		dropped_polygon.center = nav.dropped_point
+		#dropped_polygon.center = nav.dropped_point
 		#axes.draw_artist(dropped_polygon)
 
 		# Update and redraw highlight for current closest line
-		curr_path_segment = paths[nav.closest_path_index]
-		current_line.set_xdata([curr_path_segment[0][0], curr_path_segment[1][0]])
-		current_line.set_ydata([curr_path_segment[0][1], curr_path_segment[1][1]])
-		axes.draw_artist(current_line)
+		#curr_path_segment = paths[nav.closest_path_index]
+		#current_line.set_xdata([curr_path_segment[0][0], curr_path_segment[1][0]])
+		#current_line.set_ydata([curr_path_segment[0][1], curr_path_segment[1][1]])
+		#axes.draw_artist(current_line)
 
 		# Redraw bike
 		figure_blit(axes.bbox)
 
 	# Start the update & refresh timer
-	if blitting:
+	if blitting and not filename:
 		figure.canvas.new_timer(interval=ANIM_INTERVAL, callbacks=[(full_step, [], {})]).start()
 	else:
-		FuncAnimation(figure, full_step, frames=xrange(0,200))
+		ani = animation.FuncAnimation(figure, full_step, frames=xrange(0,20000))
+		if filename:
+			writer = animation.writers['ffmpeg'](fps=30)
+			ani.save(filename, writer=writer, dpi=100)
 
 	# Display the window with the simulation
 	plt.show()
@@ -330,8 +341,21 @@ if __name__ == '__main__':
 		}
 
 	# Validate arguments
+	USAGE = "USAGE: {} PATH_NAME [--video FILENAME]\nwhere PATH_NAME is one of: {}\nPATH_NAME can also be 'angle[NUMBER]', such as angle90 for a map with a 90-degree turn\nwhere --video will save the video to a file instead of displaying it, and FILENAME is the filename that we'll write the video to".format(sys.argv[0], ", ".join(PATHS.keys()))
+	filename = None
+	if "--video" in sys.argv:
+		video_index = sys.argv.index("--video")
+		if video_index + 1 < len(sys.argv):
+			filename = sys.argv[video_index+1]
+			del sys.argv[video_index]
+
+			# Now do the same thing again, since everything shifted down by one
+			del sys.argv[video_index]
+		else:
+			print(USAGE)
+			sys.exit(1)
 	if len(sys.argv) < 2 or (sys.argv[1] not in PATHS and not sys.argv[1].startswith("angle")):
-		print("USAGE: {} [PATH_NAME]\nwhere PATH_NAME is one of: {}\nPATH_NAME can also be 'angle[NUMBER]', such as angle90 for a map with a 90-degree turn".format(sys.argv[0], ", ".join(PATHS.keys())))
+		print(USAGE)
 		sys.exit(1)
 
 	# waypoints = requestHandler.parse_json(True)
@@ -343,4 +367,7 @@ if __name__ == '__main__':
 	new_map_model = mapModel.Map_Model(new_bike, waypoints, [], [])
 	new_nav = nav.Nav(new_map_model)
 
-	get_loop_function()(new_nav, new_bike, new_map_model)
+	if filename:
+		loop_matplotlib_blitting(new_nav, new_bike, new_map_model, blitting=True, filename=filename)
+	else:
+		get_loop_function()(new_nav, new_bike, new_map_model)

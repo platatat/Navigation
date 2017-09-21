@@ -87,8 +87,8 @@ class Nav(object):
 			if math.pi / 6 < angle_diff < math.pi / 4:
 				curr_lookahead -= 0.25
 
-			print("{} => {}".format(abs(angle_diff) * RAD_TO_DEG,
-				curr_lookahead))
+			#print("{} => {}".format(abs(angle_diff) * RAD_TO_DEG,
+			#	curr_lookahead))
 			self.lookahead_distances[index] = curr_lookahead
 
 	def clamp_steer_angle(self, steerD):
