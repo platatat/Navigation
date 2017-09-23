@@ -41,15 +41,17 @@ class Kalman(object):
         
         self.pub = rospy.Publisher('kalman_pub', Float32MultiArray, queue_size=10)
         rospy.init_node('kalman', anonymous=True)
-        rospy.Subscriber("bike_state", Float32MultiArray, self.bike_state)
-        rospy.Subscriber("gps", Float32MultiArray, self.gps)
+        rospy.Subscriber("bike_state", Float32MultiArray, self.bike_state_listener)
+        rospy.Subscriber("gps", Float32MultiArray, self.gps_listener)
     
-    def bike_state(self, data):
+    def bike_state_listener(self, data):
+        """ROS callback for the bike_state topic"""
         velocity = data.data[6]
         yaw = data.data[9]
         self.bike_yv = [yaw, velocity]
         
-    def gps(self, data):
+    def gps_listener(self, data):
+        """ROS callback for the gps topic"""
         #Important fields from data
         latitude = data.data[0] # In degrees
         longitude = data.data[1]
@@ -67,7 +69,7 @@ class Kalman(object):
         #rospy.loginfo("gps_xy is %f, %f", x, y)
 
 
-    def listener(self):
+    def main_loop(self):
           
         rate = rospy.Rate(100)
         #Run until the nodes are shutdown (end.sh run OR start.sh was killed)
@@ -111,5 +113,5 @@ class Kalman(object):
             rate.sleep()
 
 if __name__ == '__main__':
-    Kalman().listener()
+    Kalman().main_loop()
     
