@@ -54,17 +54,21 @@ class Kalman(object):
         self.time_step = [data.data[10]]
         #psi = data.data[7] # psi = heading in radians
         #velocity = data.data[8]
-        # Converts lat long to x,y 
-        x, y = requestHandler.math_convert(float(latitude), float(longitude)) 
+        # Converts lat long to x,y
+        x, y = requestHandler.math_convert(float(latitude), float(longitude))
         # gps current state - only relevant fields
         self.gps_xy = [x, y]
 
+        # If the GPS data is nonzero, assume that the GPS is ready
+        if not rospy.get_param("/gps_ready", False) and x != 0.0 and y != 0.0:
+            rospy.set_param("/gps_ready", True)
 
     def main_loop(self):
 
         # Wait until the GPS is ready
+        rate = rospy.Rate(20)
         while not rospy.get_param("/gps_ready", False):
-            pass
+            rate.sleep()
 
         # Initialize Kalman filter state
         P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
