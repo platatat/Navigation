@@ -65,18 +65,23 @@ def kalman_retro(raw_state):
     return kalman_state.T
 
 def kalman_real_time(raw_state, s_current, P_current):
-    """Kalman filter that can be run in real time. Input raw_state is a 5x1 matrix of raw
-    x, y, yaw, velocity, and time step data. s_current is the kalman state, usually taken from the
-    previous call to this function, and P_current is the observation, also taken from
-    previous call to function.
-    
-    Returns the new s and P after filter has been run, which can be used in the next call to the function
-    as its s_current and P_current
     """
-    
+    Kalman filter that can be run in real time. Input raw_state is a 5x1
+    matrix of raw x, y, yaw, velocity, and time step data. s_current is
+    the kalman state, usually taken from the previous call to this
+    function, and P_current is the observation, also taken from previous
+    call to function.
+
+    Returns the new s and P after filter has been run, which can be used
+    in the next call to the function as its s_current and P_current. The
+    first entry of the tuple is the Kalman state, as a row matrix (x, y,
+    x_dot, y_dot). The second entry of the tuple is the prediction
+    error, as a 4x4 square matrix.
+    """
+
     #4x4 identity matrix
     eye4 = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-    
+
     #make sure raw_state is a matrix
     raw_state = np.matrix(raw_state)
 
