@@ -60,10 +60,10 @@ class Kalman(object):
 
         # Outlier detection - if dist from last x,y is more than 50 m, ignore
         if geometry.distance([x,y], self.gps_xy) > 50:
+            self.gps_xy = [x, y]
             return
-
-        # gps current state - only relevant fields
-        self.gps_xy = [x, y]
+        else:
+            self.gps_xy = [x, y]
 
         # If the GPS data is nonzero, assume that the GPS is ready
         if not rospy.get_param("/gps_ready", False) and x != 0.0 and y != 0.0:
