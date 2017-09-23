@@ -11,6 +11,7 @@ import subprocess
 from std_msgs.msg import Float32
 import rospy
 import kalman
+import geometry
 import requestHandler
 from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Float32MultiArray
@@ -36,7 +37,7 @@ class Kalman(object):
         self.p_state_matrix = np.matrix([0])
 
         self.pub = rospy.Publisher('kalman_pub', Float32MultiArray, queue_size=10)
-        rospy.init_node('kalman', anonymous=True)
+        rospy.init_node('kalman')
         rospy.Subscriber("bike_state", Float32MultiArray, self.bike_state_listener)
         rospy.Subscriber("gps", Float32MultiArray, self.gps_listener)
 
@@ -56,6 +57,11 @@ class Kalman(object):
         #velocity = data.data[8]
         # Converts lat long to x,y
         x, y = requestHandler.math_convert(float(latitude), float(longitude))
+
+        # Outlier detection - if dist from last x,y is more than 50 m, ignore
+        if geometry.distance([x,y], self.gps_xy) > 50:
+            return
+
         # gps current state - only relevant fields
         self.gps_xy = [x, y]
 
