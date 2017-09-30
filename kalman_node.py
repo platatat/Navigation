@@ -78,7 +78,7 @@ class Kalman(object):
             #Build matrix from gps x,y coordinates and bike velocity and yaw
             gps_matrix = np.matrix(self.gps_xy + self.bike_yv + self.time_step)
             
-            gps_data.appned(gps_matrix)
+            gps_data.append(gps_matrix)
             # Initialize Kalman filter state
             if len(gps_data) == 1:
                 P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
