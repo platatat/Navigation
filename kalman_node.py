@@ -65,22 +65,9 @@ class Kalman(object):
     def main_loop(self):
 
         # Wait until the GPS is ready
-        rate = rospy.Rate(20)
-        while not rospy.get_param("/gps_ready", False):
-            rate.sleep()
-
-        # Initialize Kalman filter state
-        P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-        x_pos = gps_matrix[:,0]
-        y_pos = gps_matrix[:,1]
-        yaw = gps_matrix[:,2]
-        v = gps_matrix[:,3]
-        v_0 = v.item(0)
-        yaw_0 = yaw.item(0)
-        x_dot_0 = v_0 * np.cos(yaw_0)
-        y_dot_0 = v_0 * np.sin(yaw_0)
-        s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
-        output_matrix = kalman.kalman_real_time(gps_matrix, s_initial, P_initial)
+        # rate = rospy.Rate(20)
+        # while not rospy.get_param("/gps_ready", False):
+        #     rate.sleep()
 
         rate = rospy.Rate(100)
 
@@ -92,6 +79,19 @@ class Kalman(object):
             # The Kalman filter wants the GPS data in matrix form
             #Build matrix from gps x,y coordinates and bike velocity and yaw
             gps_matrix = np.matrix(self.gps_xy + self.bike_yv + self.time_step)
+            
+            # Initialize Kalman filter state
+            P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            x_pos = gps_matrix[:,0]
+            y_pos = gps_matrix[:,1]
+            yaw = gps_matrix[:,2]
+            v = gps_matrix[:,3]
+            v_0 = v.item(0)
+            yaw_0 = yaw.item(0)
+            x_dot_0 = v_0 * np.cos(yaw_0)
+            y_dot_0 = v_0 * np.sin(yaw_0)
+            s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
+            output_matrix = kalman.kalman_real_time(gps_matrix, s_initial, P_initial)
 
             #save gps state values for later plotting
             self.kalman_state_matrix, self.p_state_matrix = kalman.kalman_real_time(
