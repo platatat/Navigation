@@ -18,6 +18,11 @@ from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import MultiArrayLayout
 from std_msgs.msg import MultiArrayDimension
 
+gps_data = []
+kalman_state = []
+kalman_state_matrix = np.matrix([0])
+p_state_matrix = np.matrix([0])
+
 class Kalman(object):
 
     def __init__(self):
@@ -28,13 +33,6 @@ class Kalman(object):
         self.gps_xy = [101,3]
         self.bike_yv = [1,2]
         self.time_step = [90]
-
-        #Data from bike_state and gps respectively
-        #state that is published to ROS
-        self.kalman_state = []
-        #State used for kalman_real_time
-        self.kalman_state_matrix = np.matrix([0])
-        self.p_state_matrix = np.matrix([0])
 
         self.pub = rospy.Publisher('kalman_pub', Float32MultiArray, queue_size=10)
         rospy.init_node('kalman')
@@ -80,27 +78,31 @@ class Kalman(object):
             #Build matrix from gps x,y coordinates and bike velocity and yaw
             gps_matrix = np.matrix(self.gps_xy + self.bike_yv + self.time_step)
             
+            gps_data.appned(gps_matrix)
             # Initialize Kalman filter state
-            P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-            x_pos = gps_matrix[:,0]
-            y_pos = gps_matrix[:,1]
-            yaw = gps_matrix[:,2]
-            v = gps_matrix[:,3]
-            v_0 = v.item(0)
-            yaw_0 = yaw.item(0)
-            x_dot_0 = v_0 * np.cos(yaw_0)
-            y_dot_0 = v_0 * np.sin(yaw_0)
-            s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
-            output_matrix = kalman.kalman_real_time(gps_matrix, s_initial, P_initial)
-
+            if len(gps_data) == 1:
+                P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+                x_pos = gps_matrix[:,0]
+                y_pos = gps_matrix[:,1]
+                yaw = gps_matrix[:,2]
+                v = gps_matrix[:,3]
+                v_0 = v.item(0)
+                yaw_0 = yaw.item(0)
+                x_dot_0 = v_0 * np.cos(yaw_0)
+                y_dot_0 = v_0 * np.sin(yaw_0)
+                s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
+                output_matrix = kalman.kalman_real_time(gps_matrix, s_initial, P_initial)
+            else:
+                output_matrix = kalman.kalman_real_time(gps_matrix, kalman_state_matrix, p_state_matrix)
+            
             #save gps state values for later plotting
-            self.kalman_state_matrix, self.p_state_matrix = kalman.kalman_real_time(
-                    gps_matrix, self.kalman_state_matrix, self.p_state_matrix)
-
+            kalman_state_matrix = output_matrix[0] 
+            p_state_matrix = output_matrix[1]
+            
             #Change output_matrix to a standard array for publishing
-            self.kalman_state = self.kalman_state_matrix.flatten().tolist()[0]
-
-            self.pub.publish(layout, self.kalman_state)
+            kalman_state = output_matrix[0].flatten().tolist()[0]
+  
+            self.pub.publish(layout, kalman_state)
             rate.sleep()
 
 if __name__ == '__main__':
