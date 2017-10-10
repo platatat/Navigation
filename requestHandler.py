@@ -40,6 +40,10 @@ def convert2(latitude, longitude):
 # Also this --> http://stackoverflow.com/questions/1019997/convert-lat-longs-to-x-y-co-ordinates
 
 def math_convert(latitude, longitude):
+	if latitude < 42 or latitude >= 43:
+		latitude = 42.44814
+	if longitude <= -77 or longitude > -76:
+		longitude = -76.48489
 	rad_earth = 6371000
 	# Hardcoded origin
 	origin = (np.deg2rad(42.44814), np.deg2rad(-76.48489))
