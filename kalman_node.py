@@ -57,13 +57,13 @@ class Kalman(object):
         x, y = requestHandler.math_convert(float(latitude), float(longitude))
         
         #Only update if distance from last gps point is less than 20
-        old_xy = (self.gps_xy[0],self.gps_xy[1])
-        if geometry.distance(old_xy, (x,y)) < 20:
+        old_xy = (self.gps_xy)
+        if (old_xy != [101, 3]) and geometry.distance(old_xy, (x,y)) < 20:
             self.gps_xy = [x,y]
 
         # If the GPS data is nonzero, assume that the GPS is ready
-        if not rospy.get_param("/gps_ready", False) and longitude != 0.0 and latitude != 0.0:
-            rospy.set_param("/gps_ready", True)
+        #if not rospy.get_param("/gps_ready", False) and longitude != 0.0 and latitude != 0.0:
+            #rospy.set_param("/gps_ready", True)
 
     def main_loop(self):
 
