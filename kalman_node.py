@@ -71,9 +71,9 @@ class Kalman(object):
     def main_loop(self):
 
         # Wait until the GPS is ready
-        rate = rospy.Rate(20)
-        while not rospy.get_param("/gps_ready", False):
-            rate.sleep()
+        #rate = rospy.Rate(20)
+        #while not rospy.get_param("/gps_ready", False):
+           # rate.sleep()
 
         rate = rospy.Rate(100)
 
