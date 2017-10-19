@@ -57,11 +57,14 @@ class Kalman(object):
         x, y = requestHandler.math_convert(float(latitude), float(longitude))
         
         #Only update if distance from last gps point is less than 20
+        count = count + 1
         old_xy = (self.gps_xy)
         #print ("old xy ", old_xy)
         #print ("new xy ", (x,y))
         #print ("distance ", geometry.distance(old_xy, (x,y)))
-        if (old_xy != [101, 3]) and geometry.distance(old_xy, (x,y)) < 20:
+        if count < 10:
+            self.gps_xy = [x,y]  
+        elif (old_xy != [101, 3]) and geometry.distance(old_xy, (x,y)) < 20:
             self.gps_xy = [x,y]
 
         # If the GPS data is nonzero, assume that the GPS is ready
@@ -114,4 +117,5 @@ class Kalman(object):
             rate.sleep()
 
 if __name__ == '__main__':
+    count = 0
     Kalman().main_loop()
