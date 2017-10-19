@@ -41,7 +41,7 @@ class Kalman(object):
 
     def bike_state_listener(self, data):
         """ROS callback for the bike_state topic"""
-        velocity = data.data[6]
+        #velocity = data.data[6] #Hall Sensor
         yaw = data.data[9]
         self.bike_yv = [yaw, velocity]
 
@@ -52,7 +52,7 @@ class Kalman(object):
         longitude = data.data[1]
         self.time_step = [data.data[10]]
         #psi = data.data[7] # psi = heading in radians
-        #velocity = data.data[8]
+        velocity = data.data[8] #GPS velocity
         # Converts lat long to x,y
         x, y = requestHandler.math_convert(float(latitude), float(longitude))
         
