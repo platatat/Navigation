@@ -55,7 +55,7 @@ class Kalman(object):
     def gps_listener(self, data):
         """ROS callback for the gps topic"""
         self.ready = True
-        print(self.ready)
+        #print(self.ready)
         
         #Important fields from data
         latitude = data.data[0] # In degrees
@@ -102,7 +102,7 @@ class Kalman(object):
             #Build matrix from gps x,y coordinates and bike velocity and yaw
             while not self.ready:
                 jeven = "tooter"
-            gps_matrix = np.matrix(self.gps_xy + self.bike_yv + self.time_step)
+            gps_matrix = np.matrix(self.gps_xy + self.yaw + self.velocity + self.time_step)
             gps_data.append(gps_matrix)
             # Initialize Kalman filter state
             if len(gps_data) == 1:

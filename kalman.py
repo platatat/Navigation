@@ -108,7 +108,7 @@ def kalman_real_time(raw_state, s_current, P_current):
     s_new = A*s_current
     P_new = A*P_current*A.T + eye4
 
-    old_xy = (s_current[0], s_current[1])
+    old_xy = (s_current.item(0), s_current.item(1))
     if geometry.distance((raw_state.item(0),raw_state.item(1)), old_xy) < 20:
         x_actual = raw_state.item(0)
         y_actual = raw_state.item(1)
