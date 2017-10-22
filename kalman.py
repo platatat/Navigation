@@ -5,6 +5,7 @@ https://home.wlu.edu/~levys/kalman_tutorial/
 """
 
 import numpy as np
+import geometry
 
 def kalman_retro(raw_state):
     """Kalman filter that is used to retroactively filter previously collected
@@ -35,7 +36,7 @@ def kalman_retro(raw_state):
  
     kalman_state = np.matrix(np.zeros((4,rows), dtype=float))
     
-    
+    old_xy = (raw_state.item(0,0), raw_state.item(0,1))
     for i in range(rows):
         
         A = np.matrix([[1, 0 , t_step.item(i)/1000., 0], [0, 1, 0, t_step.item(i)/1000.], [0, 0, 1, 0], [0, 0, 0, 1]]) 
@@ -45,9 +46,13 @@ def kalman_retro(raw_state):
         s_new = A*s_current
         P_new = A*P_current*A.T + (np.matrix([[.0001, 0, 0 ,0], [0, .0001, 0, 0], [0,0,.0001,0], [0,0,0,.0001]]))
         
-    
-        x_actual = raw_state.item(i, 0)
-        y_actual = raw_state.item(i, 1)
+        if geometry.distance((raw_state.item(i,0),raw_state.item(i,1)), old_xy) < 20:
+            x_actual = raw_state.item(i, 0)
+            y_actual = raw_state.item(i, 1)
+            old_xy = (x_actual, y_actual)
+        else:
+            x_actual = old_xy[0]
+            y_actual = old_xy[1]
         psi_actual = raw_state.item(i, 2)
         v_actual = raw_state.item(i, 3)
         x_dot_actual = v_actual*np.cos(psi_actual)
@@ -103,9 +108,13 @@ def kalman_real_time(raw_state, s_current, P_current):
     s_new = A*s_current
     P_new = A*P_current*A.T + eye4
 
-
-    x_actual = raw_state.item(0)
-    y_actual = raw_state.item(1)
+    old_xy = (s_current[0], s_current[1])
+    if geometry.distance((raw_state.item(0),raw_state.item(1)), old_xy) < 20:
+        x_actual = raw_state.item(0)
+        y_actual = raw_state.item(1)
+    else:
+        x_actual = old_xy[0]
+        y_actual = old_xy[1]
     psi_actual = raw_state.item(2)
     v_actual = raw_state.item(3)
     x_dot_actual = v_actual*np.cos(psi_actual)

@@ -13,6 +13,7 @@ import rospy
 import kalman
 import geometry
 import requestHandler
+import time
 from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import MultiArrayLayout
@@ -22,7 +23,6 @@ gps_data = []
 kalman_state = []
 kalman_state_matrix = np.matrix([0])
 p_state_matrix = np.matrix([0])
-
 class Kalman(object):
 
     def __init__(self):
@@ -31,8 +31,10 @@ class Kalman(object):
         # should initialize itself -- TODO
 
         self.gps_xy = [101,3]
-        self.bike_yv = [1,2]
+        self.yaw = [1]
+        self.velocity = [2]
         self.time_step = [90]
+        self.ready = False
 
         self.pub = rospy.Publisher('kalman_pub', Float32MultiArray, queue_size=10)
         rospy.init_node('kalman')
@@ -41,31 +43,42 @@ class Kalman(object):
 
     def bike_state_listener(self, data):
         """ROS callback for the bike_state topic"""
-        #velocity = data.data[6] #Hall Sensor
         yaw = data.data[9]
-        self.bike_yv = [yaw, velocity]
+        velocity = data.data[6]
+        
+        # uncomment if getting yaw from bike_state (IMU)
+        self.yaw = [yaw]
+        
+        # uncomment if getting velocity from bike_state (hall sensor)
+        #self.velocity = [velocity]
 
     def gps_listener(self, data):
         """ROS callback for the gps topic"""
+        self.ready = True
+        print(self.ready)
+        
         #Important fields from data
         latitude = data.data[0] # In degrees
         longitude = data.data[1]
+        yaw = data.data[7]
+        velocity = data.data[8]
+        
+        
+        
+        # uncomment if getting yaw from gps
+        # self.yaw = [yaw]
+        
+        # uncomment if getting velocity from gps
+        self.velocity = [velocity]
+        
         self.time_step = [data.data[10]]
-        #psi = data.data[7] # psi = heading in radians
-        velocity = data.data[8] #GPS velocity
+        
+        
+        
+       
         # Converts lat long to x,y
         x, y = requestHandler.math_convert(float(latitude), float(longitude))
-        
-        #Only update if distance from last gps point is less than 20
-        count = count + 1
-        old_xy = (self.gps_xy)
-        #print ("old xy ", old_xy)
-        #print ("new xy ", (x,y))
-        #print ("distance ", geometry.distance(old_xy, (x,y)))
-        if count < 10:
-            self.gps_xy = [x,y]  
-        elif (old_xy != [101, 3]) and geometry.distance(old_xy, (x,y)) < 20:
-            self.gps_xy = [x,y]
+        self.gps_xy = [x,y]  
 
         # If the GPS data is nonzero, assume that the GPS is ready
         #if not rospy.get_param("/gps_ready", False) and longitude != 0.0 and latitude != 0.0:
@@ -87,8 +100,9 @@ class Kalman(object):
 
             # The Kalman filter wants the GPS data in matrix form
             #Build matrix from gps x,y coordinates and bike velocity and yaw
+            while not self.ready:
+                jeven = "tooter"
             gps_matrix = np.matrix(self.gps_xy + self.bike_yv + self.time_step)
-            
             gps_data.append(gps_matrix)
             # Initialize Kalman filter state
             if len(gps_data) == 1:
@@ -117,5 +131,4 @@ class Kalman(object):
             rate.sleep()
 
 if __name__ == '__main__':
-    count = 0
     Kalman().main_loop()
