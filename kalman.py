@@ -46,6 +46,7 @@ def kalman_retro(raw_state):
         s_new = A*s_current
         P_new = A*P_current*A.T + (np.matrix([[.0001, 0, 0 ,0], [0, .0001, 0, 0], [0,0,.0001,0], [0,0,0,.0001]]))
         
+        #Check for outliers
         if geometry.distance((raw_state.item(i,0),raw_state.item(i,1)), old_xy) < 20:
             x_actual = raw_state.item(i, 0)
             y_actual = raw_state.item(i, 1)
@@ -53,6 +54,7 @@ def kalman_retro(raw_state):
         else:
             x_actual = old_xy[0]
             y_actual = old_xy[1]
+        
         psi_actual = raw_state.item(i, 2)
         v_actual = raw_state.item(i, 3)
         x_dot_actual = v_actual*np.cos(psi_actual)
@@ -107,7 +109,8 @@ def kalman_real_time(raw_state, s_current, P_current):
  
     s_new = A*s_current
     P_new = A*P_current*A.T + eye4
-
+    
+    #Check for outliers
     old_xy = (s_current.item(0), s_current.item(1))
     if geometry.distance((raw_state.item(0),raw_state.item(1)), old_xy) < 20:
         x_actual = raw_state.item(0)
@@ -115,6 +118,7 @@ def kalman_real_time(raw_state, s_current, P_current):
     else:
         x_actual = old_xy[0]
         y_actual = old_xy[1]
+        
     psi_actual = raw_state.item(2)
     v_actual = raw_state.item(3)
     x_dot_actual = v_actual*np.cos(psi_actual)

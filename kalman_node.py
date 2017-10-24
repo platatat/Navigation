@@ -4,16 +4,13 @@ Used for ROS communication. It allows real-time 'filtering' of position data
 on the bike by subscribing to data from different sensors (GPS + IMU). When
 testing, use "bash start.sh run_with_kalman" to run this node.
 """
-import csv
+
 import numpy as np
-import gps_assisted_simulator_node
-import subprocess
 from std_msgs.msg import Float32
 import rospy
 import kalman
 import geometry
 import requestHandler
-import time
 from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import MultiArrayLayout
@@ -73,23 +70,12 @@ class Kalman(object):
         
         self.time_step = [data.data[10]]
         
-        
-        
        
         # Converts lat long to x,y
         x, y = requestHandler.math_convert(float(latitude), float(longitude))
         self.gps_xy = [x,y]  
 
-        # If the GPS data is nonzero, assume that the GPS is ready
-        #if not rospy.get_param("/gps_ready", False) and longitude != 0.0 and latitude != 0.0:
-            #rospy.set_param("/gps_ready", True)
-
     def main_loop(self):
-
-        # Wait until the GPS is ready
-        #rate = rospy.Rate(20)
-        #while not rospy.get_param("/gps_ready", False):
-           # rate.sleep()
 
         rate = rospy.Rate(100)
 
@@ -97,13 +83,16 @@ class Kalman(object):
         while not rospy.is_shutdown():
             dim = [MultiArrayDimension('data', 1, 4)]
             layout = MultiArrayLayout(dim, 0)
-
-            # The Kalman filter wants the GPS data in matrix form
-            #Build matrix from gps x,y coordinates and bike velocity and yaw
+            
+            #wait here until GPS has been called
             while not self.ready:
                 jeven = "tooter"
+            
+            # The Kalman filter wants the GPS data in matrix form
+            #Build matrix from gps x,y coordinates, yaw, and bike velocity
             gps_matrix = np.matrix(self.gps_xy + self.yaw + self.velocity + self.time_step)
             gps_data.append(gps_matrix)
+            
             # Initialize Kalman filter state
             if len(gps_data) == 1:
                 P_initial = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
@@ -117,6 +106,8 @@ class Kalman(object):
                 y_dot_0 = v_0 * np.sin(yaw_0)
                 s_initial = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
                 output_matrix = kalman.kalman_real_time(gps_matrix, s_initial, P_initial)
+                
+            #Use the output of the previous call as the input to the next call
             else:
                 output_matrix = kalman.kalman_real_time(gps_matrix, kalman_state_matrix, p_state_matrix)
             
