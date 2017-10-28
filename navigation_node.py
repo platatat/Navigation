@@ -33,18 +33,18 @@ def update_bike_state(data):
     new_bike.phi = d[5]
     new_bike.delta = d[2]
     new_bike.w_r = d[4]
-    # new_bike.v = d[] #gps or 6
-    # new_bike.turning_r = d[7] LOOKEDUP
+    new_bike.psi = d[9]
+    
+    #Uncomment for velocity from hall sensors (live bike test)
+    #  velocity = data.data[6]
+    #  new_bike.v = velocity
 
 # This variable stores the old set of GPS data
 old_gps_set = ()
 def update_xy(data):
     """Takes the kalman state data for position approximation"""
-    print 'kalman_node length: ', len(data)
+    print 'kalman data length: ', len(data.data)
     xy_point = requestHandler.math_convert(latitude, longitude)
-
-    new_bike.psi = psi
-    new_bike.v = velocity
     
     new_bike.xB = xy_point[0]
     new_bike.yB = xy_point[1]
@@ -72,7 +72,11 @@ def update_gps(data):
         # latitude = data.data[0] # In degrees
         # longitude = data.data[1]
         # psi = data.data[7] # psi = heading in radians
+    
+    #Uncomment these for velocity from the buck
     velocity = data.data[8]
+    new_bike.v = velocity
+
 
     #if data.data[0] == 0 and data.data[1] == 0:
      #   not_ready = True
@@ -90,7 +94,6 @@ def update_gps(data):
         # 
         #     #d_psi = float(psi - old_psi)/old_time_since_last
         # new_bike.psi = psi
-        # new_bike.v = velocity
         #     #Update old velocity and angle for extrapolation
         #     #old_v = velocity
         #     #old_psi = psi
