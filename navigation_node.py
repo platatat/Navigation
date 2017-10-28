@@ -46,8 +46,8 @@ def update_xy(data):
     print 'kalman data length: ', len(data.data)
     #xy_point = requestHandler.math_convert(latitude, longitude)
     
-    new_bike.xB = xy_point[0]
-    new_bike.yB = xy_point[1]
+    new_bike.xB = data.data[0]
+    new_bike.yB = data.data[1]
 
 #callback from gps 
 def update_gps(data):
