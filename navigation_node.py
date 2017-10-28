@@ -16,14 +16,16 @@ import mapModel
 import requestHandler
 
 
-def callback(data):
-    new_nav.map_model.bike.xy_coord = (data.x, data.y)
-    new_nav.map_model.bike.direction = data.theta
+#def callback(data):
+ #   new_nav.map_model.bike.xy_coord = (data.x, data.y)
+ #  new_nav.map_model.bike.direction = data.theta
 
+#Callback for paths
 def path_parse(data):
     d = np.array(data.data).reshape(len(data.data)/4, 2, 2)
     new_map.paths = d
 
+#callback from bike state
 def update_bike_state(data):
     d = data.data
     #new_bike.xB = d[0]
@@ -36,29 +38,41 @@ def update_bike_state(data):
 
 # This variable stores the old set of GPS data
 old_gps_set = ()
-def update_bike_xy(data):
+def update_xy(data):
+    """Takes the kalman state data for position approximation"""
+    print 'kalman_node length: ', len(data)
+    xy_point = requestHandler.math_convert(latitude, longitude)
+
+    new_bike.psi = psi
+    new_bike.v = velocity
+    
+    new_bike.xB = xy_point[0]
+    new_bike.yB = xy_point[1]
+
+#callback from gps 
+def update_gps(data):
     """Takes the incoming data from the GPS and updates our state with it."""
 
     # Only update the state if the incoming data is different from the last set
     # of GPS data we received
 
     # These are the four variables we use below
-    global old_gps_set
-    curr_gps_set = (data.data[0], data.data[1], data.data[7], data.data[8])
-    if curr_gps_set == old_gps_set:
-        rospy.loginfo("Rejecting data from gps")
-        return
-    old_gps_set = curr_gps_set
+    #global old_gps_set
+    #curr_gps_set = (data.data[0], data.data[1], data.data[7], data.data[8])
+    #if curr_gps_set == old_gps_set:
+    #    rospy.loginfo("Rejecting data from gps")
+    #    return
+    #old_gps_set = curr_gps_set
 
 #    if data.data[0] == 0 and data.data[1] == 0:
 #       not_ready = True
 #    else:
-    if (True):
-        not_ready = False
-        latitude = data.data[0] # In degrees
-        longitude = data.data[1]
-        psi = data.data[7] # psi = heading in radians
-        velocity = data.data[8]
+    #if (True):
+        # not_ready = False
+        # latitude = data.data[0] # In degrees
+        # longitude = data.data[1]
+        # psi = data.data[7] # psi = heading in radians
+    velocity = data.data[8]
 
     #if data.data[0] == 0 and data.data[1] == 0:
      #   not_ready = True
@@ -69,19 +83,19 @@ def update_bike_xy(data):
             #not_ready = False
             #lat = data.data[0] # In degrees 
             #lon = data.data[1]
-            #psi = data.data[7] # This needs to be in rads
-            #velocity = data.data[8]
-        xy_point = requestHandler.math_convert(latitude, longitude)
-
-
-            #d_psi = float(psi - old_psi)/old_time_since_last
-        new_bike.psi = psi
-        new_bike.v = velocity
-            #Update old velocity and angle for extrapolation
-            #old_v = velocity
-            #old_psi = psi
-        new_bike.xB = xy_point[0]
-        new_bike.yB = xy_point[1]
+        #     #psi = data.data[7] # This needs to be in rads
+        #     #velocity = data.data[8]
+        # xy_point = requestHandler.math_convert(latitude, longitude)
+        # 
+        # 
+        #     #d_psi = float(psi - old_psi)/old_time_since_last
+        # new_bike.psi = psi
+        # new_bike.v = velocity
+        #     #Update old velocity and angle for extrapolation
+        #     #old_v = velocity
+        #     #old_psi = psi
+        # new_bike.xB = xy_point[0]
+        # new_bike.yB = xy_point[1]
         #else:
          #   new_psi = d_psi*time_since_last + old_psi
           #  new_x = velocity*cos(new_psi)
@@ -113,9 +127,10 @@ def talker():
     pub = rospy.Publisher('nav_instr', Float32, queue_size=10)
     rospy.init_node('navigation', anonymous=True)
     # Subscribe to topic "bike_state" to get data and then call update_bike_state with data
-    rospy.Subscriber("cmd_vel", Twist, keyboard_update)
+    #rospy.Subscriber("cmd_vel", Twist, keyboard_update)
     rospy.Subscriber("bike_state", Float32MultiArray, update_bike_state) 
-    rospy.Subscriber("gps", Float32MultiArray, update_bike_xy)
+    #rospy.Subscriber("gps", Float32MultiArray, update_gps)
+    rospy.Subscriber("kalman_pub", Float32MultiArray, update_xy)
     rospy.Subscriber("paths", Float32MultiArray, path_parse) 
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
