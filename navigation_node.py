@@ -44,7 +44,7 @@ old_gps_set = ()
 def update_xy(data):
     """Takes the kalman state data for position approximation"""
     print 'kalman data length: ', len(data.data)
-    xy_point = requestHandler.math_convert(latitude, longitude)
+    #xy_point = requestHandler.math_convert(latitude, longitude)
     
     new_bike.xB = xy_point[0]
     new_bike.yB = xy_point[1]
