@@ -15,58 +15,44 @@ import bikeState
 import mapModel
 import requestHandler
 
-#Sones - I don't think this is used but I left it just in case we need it
 #def callback(data):
  #   new_nav.map_model.bike.xy_coord = (data.x, data.y)
  #  new_nav.map_model.bike.direction = data.theta
 
-#Sones - I didn't modify this
 #Callback for paths
 def path_parse(data):
     d = np.array(data.data).reshape(len(data.data)/4, 2, 2)
     new_map.paths = d
 
-#Sones - I only added the part with psi for heading, is this correct?
-#callback from bike state
+
+#callback from bike_state
 def update_bike_state(data):
+    """Updates the bike object with data from bike_state"""
     d = data.data
-    #new_bike.xB = d[0]
-    #new_bike.yB = d[1]
-    new_bike.phi = d[5]
-    new_bike.delta = d[2]
-    new_bike.w_r = d[4]
-    new_bike.psi = d[9]
+
+    new_bike.phi = d[5] #lean angle/roll (IMU)
+    new_bike.delta = d[2] #steer angle (encoder)
+    new_bike.w_r = d[4] #lean rate (IMU)
+    new_bike.psi = d[9] #heading/yaw (IMU)
     
-    #Uncomment for velocity from hall sensors (live bike test)
-    #  velocity = data.data[6]
-    #  new_bike.v = velocity
+    #Uncomment for velocity from bike_state (hall sensors)
+    #  new_bike.v = d[6] (hall sensors)
 
-# This variable stores the old set of GPS data
-old_gps_set = ()
-
-#Sones - I confirmed that data.data is only 4 entries -- do we need to update x_dot or y_dot
-#I looked at bikeState and it didn't seem to have a corresponding field
 #callback from kalman_pub -- data.data = [x,y,x_dot,y_dot]
 def update_xy(data):
-    """Takes the kalman state data for position approximation"""
-    #print 'kalman data length: ', len(data.data)
-    #xy_point = requestHandler.math_convert(latitude, longitude)
+    """Updates the bike object with data from kalman_pub"""
     
-    #x and y 
-    new_bike.xB = data.data[0]
-    new_bike.yB = data.data[1]
+    #x and y from kalman
+    new_bike.xB = data.data[0] #x position (kalman)
+    new_bike.yB = data.data[1] #y position (kalman)
 
-
-#Sones - Only should be getting velocity off gps, correct?
-#I commented out most of this crap the only thing we care about is velocity I'm pretty sure
 #callback from gps 
 def update_gps(data):
-    """Takes the incoming data from the GPS and updates our state with it."""
+    """Updates the bike object with data from gps"""
+    
+    #Uncomment these for velocity from the GPS
+    new_bike.v = data.data[8] #velocity (GPS)
 
-    # Only update the state if the incoming data is different from the last set
-    # of GPS data we received
-
-    # These are the four variables we use below
     #global old_gps_set
     #curr_gps_set = (data.data[0], data.data[1], data.data[7], data.data[8])
     #if curr_gps_set == old_gps_set:
@@ -82,11 +68,6 @@ def update_gps(data):
         # latitude = data.data[0] # In degrees
         # longitude = data.data[1]
         # psi = data.data[7] # psi = heading in radians
-    
-    #Uncomment these for velocity from the buck
-    velocity = data.data[8]
-    new_bike.v = velocity
-
 
     #if data.data[0] == 0 and data.data[1] == 0:
      #   not_ready = True
@@ -115,7 +96,6 @@ def update_gps(data):
            # new_y = velocity*sin(new_psi)
         #old_time_since_last = data.data[5]
 
-#Sones - this doesn't matter
 def keyboard_update(data):
     #rospy.loginfo(data) 
     x = data.linear.x
@@ -136,8 +116,6 @@ def keyboard_update(data):
         psi = new_bike.psi
         new_bike.psi = (psi + np.pi/12)%(2*np.pi)
 
-#Sones - all I did here was change the names of some of the subscribers
-#and added one for kalman -- please delete my comments and re-push when you're done
 def talker():
     pub = rospy.Publisher('nav_instr', Float32, queue_size=10)
     rospy.init_node('navigation', anonymous=True)
@@ -150,12 +128,8 @@ def talker():
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         new_map = new_nav.map_model
-        #if not_ready:
-         #   pub.publish(3)
-        #else:
-        if True:
-            #rospy.loginfo((new_bike.xB, new_bike.yB, new_bike.psi, new_nav.direction_to_turn()))
-            pub.publish(new_nav.get_steering_angle())
+        #rospy.loginfo((new_bike.xB, new_bike.yB, new_bike.psi, new_nav.direction_to_turn()))
+        pub.publish(new_nav.get_steering_angle())
         rate.sleep()
 
 if __name__ == '__main__':
