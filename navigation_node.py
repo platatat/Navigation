@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Used for ROS communication. Communicates between various sensors to update bike state
+"""Used for ROS communication. Communicates between various sensors to update bike object
 and allows navigation algorithm to run on the bike."""
 
 import rospy
@@ -50,7 +50,7 @@ def update_xy(data):
 def update_gps(data):
     """Updates the bike object with data from gps"""
     
-    #Uncomment these for velocity from the GPS
+    #Uncomment for velocity from the GPS
     new_bike.v = data.data[8] #velocity (GPS)
 
     #global old_gps_set
@@ -96,35 +96,15 @@ def update_gps(data):
            # new_y = velocity*sin(new_psi)
         #old_time_since_last = data.data[5]
 
-def keyboard_update(data):
-    #rospy.loginfo(data) 
-    x = data.linear.x
-    z = data.angular.z
-    v = .5
-    if x>0 and z == 0: #up
-        new_bike.yB += v 
-    if x<0 and z == 0: #down
-        new_bike.yB -= v 
-    if z>0 and x == 0: #left
-        new_bike.xB -=v        
-    if z<0 and x == 0: #right
-        new_bike.xB +=v
-    if x>0 and z > 0: #ccw
-        psi = new_bike.psi
-        new_bike.psi = (psi + np.pi/12)%(2*np.pi) 
-    if x>0 and z < 0: #cw
-        psi = new_bike.psi
-        new_bike.psi = (psi + np.pi/12)%(2*np.pi)
-
 def talker():
     pub = rospy.Publisher('nav_instr', Float32, queue_size=10)
     rospy.init_node('navigation', anonymous=True)
-    # Subscribe to topic "bike_state" to get data and then call update_bike_state with data
-    #rospy.Subscriber("cmd_vel", Twist, keyboard_update)
+
     rospy.Subscriber("bike_state", Float32MultiArray, update_bike_state) 
-    #rospy.Subscriber("gps", Float32MultiArray, update_gps)
+    rospy.Subscriber("gps", Float32MultiArray, update_gps)
     rospy.Subscriber("kalman_pub", Float32MultiArray, update_xy)
-    rospy.Subscriber("paths", Float32MultiArray, path_parse) 
+    rospy.Subscriber("paths", Float32MultiArray, path_parse)
+    
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         new_map = new_nav.map_model
@@ -137,8 +117,8 @@ if __name__ == '__main__':
         old_psi = 0
         old_v = 0
         d_psi = 0
-        not_ready = True
         new_bike = bikeState.Bike(0, -10, 0.1, np.pi/3, 0, 0, 3.57)
+        # waypoints = requestHandler.parse_json(True)
         waypoints = [(0.1, 0.1), (30.1, 0.1), (31.1, 0.1)]
         new_map = mapModel.Map_Model(new_bike, waypoints, [], [])
         new_nav = nav.Nav(new_map)
