@@ -43,11 +43,10 @@ class Kalman(object):
         yaw = data.data[9]
         velocity = data.data[6]
         
-        # uncomment if getting yaw from bike_state (IMU)
         self.yaw = [yaw]
         
-        # uncomment if getting velocity from bike_state (hall sensor)
-        #self.velocity = [velocity]
+        #uncomment if getting velocity from bike_state (hall sensor)
+        self.velocity = [velocity]
 
     def gps_listener(self, data):
         """ROS callback for the gps topic"""
@@ -60,13 +59,8 @@ class Kalman(object):
         yaw = data.data[7]
         velocity = data.data[8]
         
-        
-        
-        # uncomment if getting yaw from gps
-        # self.yaw = [yaw]
-        
         # uncomment if getting velocity from gps
-        self.velocity = [velocity]
+        #self.velocity = [velocity]
         
         self.time_step = [data.data[10]]
         

@@ -36,7 +36,7 @@ def update_bike_state(data):
     new_bike.psi = d[9] #heading/yaw (IMU)
     
     #Uncomment for velocity from bike_state (hall sensors)
-    #  new_bike.v = d[6] (hall sensors)
+    new_bike.v = d[6] # velocity (hall sensors)
 
 #callback from kalman_pub -- data.data = [x,y,x_dot,y_dot]
 def update_xy(data):
@@ -50,9 +50,12 @@ def update_xy(data):
 def update_gps(data):
     """Updates the bike object with data from gps"""
     
+    #Comment for velocity from the GPS
+    pass
+    
     #Uncomment for velocity from the GPS
-    new_bike.v = data.data[8] #velocity (GPS)
-
+    # new_bike.v = data.data[8] #velocity (GPS)
+    
     #global old_gps_set
     #curr_gps_set = (data.data[0], data.data[1], data.data[7], data.data[8])
     #if curr_gps_set == old_gps_set:
