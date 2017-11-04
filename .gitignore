@@ -1,3 +1,6 @@
+# Vim stuff
+*.swp
+
 # Mac stuff
 .DS_Store
 
