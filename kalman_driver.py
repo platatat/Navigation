@@ -151,6 +151,10 @@ def real_time(gps_file, kalman_file):
   # Plot the Kalman output
   plt.scatter(kalman_matrix[:,0], kalman_matrix[:,1], edgecolors="none")
   
+  #PLOT WAYPOINTS ONCE WE HAVE THE CHANCE
+  #waypoints = FILL IN ONCE YOU CONVERT WAYPOINTS
+  
+  
   # Show everything
   plt.show()
   

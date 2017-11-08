@@ -20,6 +20,9 @@ gps_data = []
 kalman_state = []
 kalman_state_matrix = np.matrix([0])
 p_state_matrix = np.matrix([0])
+count = 0
+initial_lat = 0
+initial_long = 0
 class Kalman(object):
 
     def __init__(self):
@@ -52,7 +55,13 @@ class Kalman(object):
         """ROS callback for the gps topic"""
         self.ready = True
         #print(self.ready)
-        
+        #Check if this is our first GPS reading --
+        # not robust but will work for now if we start test at the right spot
+        if count == 0:
+            #Re-defines the origins 
+            initial_lat = data.data[0]
+            initial_long = data.data[1]
+            count = 1
         #Important fields from data
         latitude = data.data[0] # In degrees
         longitude = data.data[1]
@@ -65,8 +74,10 @@ class Kalman(object):
         self.time_step = [data.data[10]]
         
        
-        # Converts lat long to x,y
-        x, y = requestHandler.math_convert(float(latitude), float(longitude))
+        # Converts lat long to x,y using FIXED origin
+        #x, y = requestHandler.math_convert(float(latitude), float(longitude))
+        #Converts lat long to x,y using RELATIVE origin
+        x, y = requestHandler.math_convert_relative(float(latitude), float(longitude), float(initial_lat), float(initial_long))
         self.gps_xy = [x,y]  
 
     def main_loop(self):
