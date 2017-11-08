@@ -44,12 +44,12 @@ class Kalman(object):
     def bike_state_listener(self, data):
         """ROS callback for the bike_state topic"""
         yaw = data.data[9]
-        velocity = data.data[6]
+        #velocity = data.data[6]
         
-        self.yaw = [yaw]
+        #self.yaw = [yaw]
         
         #uncomment if getting velocity from bike_state (hall sensor)
-        self.velocity = [velocity]
+        #self.velocity = [velocity]
 
     def gps_listener(self, data):
         """ROS callback for the gps topic"""
@@ -69,7 +69,7 @@ class Kalman(object):
         velocity = data.data[8]
         
         # uncomment if getting velocity from gps
-        #self.velocity = [velocity]
+        self.velocity = velocity
         
         self.time_step = [data.data[10]]
         
