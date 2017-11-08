@@ -54,6 +54,7 @@ class Kalman(object):
     def gps_listener(self, data):
         """ROS callback for the gps topic"""
         self.ready = True
+        global count,initial_lat,initial_long
         #print(self.ready)
         #Check if this is our first GPS reading --
         # not robust but will work for now if we start test at the right spot
@@ -69,7 +70,7 @@ class Kalman(object):
         velocity = data.data[8]
         
         # uncomment if getting velocity from gps
-        self.velocity = velocity
+        self.velocity = [velocity]
         
         self.time_step = [data.data[10]]
         

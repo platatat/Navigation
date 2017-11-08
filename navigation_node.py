@@ -121,7 +121,7 @@ if __name__ == '__main__':
         d_psi = 0
         new_bike = bikeState.Bike(0, -10, 0.1, np.pi/3, 0, 0, 3.57)
         # waypoints = requestHandler.parse_json(True)
-        waypoints = [(0.1, 0.1), (30.1, 0.1), (31.1, 0.1)]
+        waypoints = [(0.0, 10.0), (-10.0, 10.0)]
         new_map = mapModel.Map_Model(new_bike, waypoints, [], [])
         new_nav = nav.Nav(new_map)
         talker()
