@@ -87,7 +87,7 @@ def kalman_real_time(raw_state, s_current, P_current):
     """
 
     #4x4 identity matrix
-    eye4 = np.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+    eye4 = np.matrix([[.001, 0, 0, 0], [0, .001, 0, 0], [0, 0, .001, 0], [0, 0, 0, .001]])
 
     #make sure raw_state is a matrix
     raw_state = np.matrix(raw_state)

@@ -47,19 +47,22 @@ def gps_only_retro(gps_file):
   gps_matrix = np.matrix(gps_data)
   
   # Plot the GPS data
-  plt.scatter(gps_matrix[:,0], gps_matrix[:,1], c='r', edgecolors="none")
+  plt.scatter([gps_matrix[:,0]], [gps_matrix[:,1]], c='r', edgecolors="none")
   
   # Run the Kalman filter
   output_matrix = kalman.kalman_retro(gps_matrix)
   
   # Plot the Kalman output
-  plt.scatter(output_matrix[:,0], output_matrix[:,1], edgecolors="none")
+  plt.scatter([output_matrix[:,0]], [output_matrix[:,1]], edgecolors="none")
   
   # Show everything
   plt.show()
 
 def gps_imu_retro(gps_file, bike_state_file):
   
+  count = 0
+  orig_lat = 0
+  orig_long
   gps_data = []
   with open(gps_file) as gps_file:
       gps_reader = csv.reader(gps_file, delimiter=",")
@@ -74,8 +77,19 @@ def gps_imu_retro(gps_file, bike_state_file):
           # field0 is lat, field1 is long
           # field8 is speed from the gps (meters per second)
           # field10 is timestep (miliseconds)
-          x, y = requestHandler.math_convert(float(row[2]), float(row[3]))
+           #Uncomment if not using relative
+          # x, y = requestHandler.math_convert_relative(float(row[2]), float(row[3]), float(row[2]), float(row[3]))
+
+          #Uncomment up 'else' if using relative
+          if count == 0:
+            orig_lat = float(row[2])
+            orig_long = float(row[3])
+            x, y = requestHandler.math_convert_relative(float(row[2]), float(row[3]), orig_lat , orig_long )
+            count = 1
+          else:
+            x, y = requestHandler.math_convert_relative(float(row[2]), float(row[3]), orig_lat, orig_long)
           gps_data.append([x, y, float(row[10]), float(row[12])])
+  
           
   bike_state_data = []
   with open(bike_state_file) as bike_state_file:
@@ -97,13 +111,13 @@ def gps_imu_retro(gps_file, bike_state_file):
   combined_matrix = np.insert(gps_matrix, 2, bike_state_matrix.flatten(), axis=1)
   
   # Plot the GPS data
-  plt.scatter(combined_matrix[:,0], combined_matrix[:,1], c='r', edgecolors="none")
+  plt.scatter([combined_matrix[:,0]], [combined_matrix[:,1]], c='r', edgecolors="none")
   
   # Run the Kalman filter
   output_matrix = kalman.kalman_retro(combined_matrix)
   
   # Plot the Kalman output
-  plt.scatter(output_matrix[:,0], output_matrix[:,1], edgecolors="none")
+  plt.scatter([output_matrix[:,0]], [output_matrix[:,1]], edgecolors="none")
   
   # Show everything
   plt.show()
@@ -111,6 +125,9 @@ def gps_imu_retro(gps_file, bike_state_file):
 def real_time(gps_file, kalman_file):
   
   gps_data = []
+  count = 0
+  orig_lat = 0
+  orig_long = 0
   with open(gps_file) as gps_file:
       gps_reader = csv.reader(gps_file, delimiter=",")
       header_row = True
@@ -124,7 +141,17 @@ def real_time(gps_file, kalman_file):
           # field0 is lat, field1 is long
           # field8 is speed from the gps (meters per second)
           # field10 is timestep (miliseconds)
-          x, y = requestHandler.math_convert(float(row[2]), float(row[3]))
+          #Uncomment if not using relative
+          # x, y = requestHandler.math_convert_relative(float(row[2]), float(row[3]), float(row[2]), float(row[3]))
+
+          #Uncomment up 'else' if using relative
+          if count == 0:
+            orig_lat = float(row[2])
+            orig_long = float(row[3])
+            x, y = requestHandler.math_convert_relative(float(row[2]), float(row[3]), orig_lat , orig_long )
+            count = 1
+          else:
+            x, y = requestHandler.math_convert_relative(float(row[2]), float(row[3]), orig_lat, orig_long)
           gps_data.append([x, y, float(row[10]), float(row[12])])
   
   kalman_data = []    
@@ -146,23 +173,24 @@ def real_time(gps_file, kalman_file):
   kalman_matrix = np.matrix(kalman_data)
   
   # Plot the GPS data
-  plt.scatter(gps_matrix[:,0], gps_matrix[:,1], c='r', edgecolors="none")
+  plt.scatter([gps_matrix[:,0]], [gps_matrix[:,1]], c='r', edgecolors="none")
   
   # Plot the Kalman output
-  plt.scatter(kalman_matrix[:,0], kalman_matrix[:,1], edgecolors="none")
+  plt.scatter([kalman_matrix[:,0]], [kalman_matrix[:,1]], edgecolors="none")
   
   #PLOT WAYPOINTS ONCE WE HAVE THE CHANCE
-  #waypoints = FILL IN ONCE YOU CONVERT WAYPOINTS
+  waypoints = [(0.0, 0.0), (0.0, 10.0), (0.0, 20.0), (0.0, 30.0)]
   
+  plt.scatter([i[0] for i in waypoints], [i[1] for i in waypoints], c='g')
   
   # Show everything
   plt.show()
   
 if __name__ == '__main__':
-  GPS_FILE = "/Users/joshuasones/Desktop/School/Bike Team/gps_2017-07-18~~02-36-30-PM-copy.csv"
-  BIKE_STATE_FILE = "/Users/joshuasones/Desktop/bike_2017-07-18~~02-36-30-PM-copy.csv"
-  #KALMAN_FILE = "/Users/joshuasones/Desktop/School/Bike Team/kalman_pub_2017-08-02~~12-29-37-PM.csv"
+  GPS_FILE = "/Users/joshua/Desktop/gps_2017-11-07~~07-27-22-PM.csv"
+  #BIKE_STATE = "/Users/joshua/Desktop/kalman_pub_2017-11-07~~07-27-22-PM.csv"
+  KALMAN_FILE = "/Users/joshua/Desktop/kalman_pub_2017-11-07~~07-27-22-PM.csv"
   
-  #gps_only_retro(GPS_FILE)
-  gps_imu_retro(GPS_FILE, BIKE_STATE_FILE)
+  gps_only_retro(GPS_FILE)
+  #gps_imu_retro(GPS_FILE, BIKE_STATE)
   #real_time(GPS_FILE, KALMAN_FILE)
