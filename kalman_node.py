@@ -15,7 +15,6 @@ from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import MultiArrayLayout
 from std_msgs.msg import MultiArrayDimension
-from matplotlib import pyplot as plt
 
 gps_data = []
 kalman_state = []
@@ -77,9 +76,9 @@ class Kalman(object):
         
        
         # Converts lat long to x,y using FIXED origin
-        #x, y = requestHandler.math_convert(float(latitude), float(longitude))
+        x, y = requestHandler.math_convert(float(latitude), float(longitude))
         #Converts lat long to x,y using RELATIVE origin
-        x, y = requestHandler.math_convert_relative(float(latitude), float(longitude), float(initial_lat), float(initial_long))
+        #x, y = requestHandler.math_convert_relative(float(latitude), float(longitude), float(initial_lat), float(initial_long))
 
 
     def main_loop(self):
@@ -129,6 +128,4 @@ class Kalman(object):
             rate.sleep()
 
 if __name__ == '__main__':
-    plt.ion()
-    plt.show()
     Kalman().main_loop()

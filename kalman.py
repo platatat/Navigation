@@ -31,6 +31,7 @@ def kalman_retro(raw_state):
     s_current = np.matrix([[x_pos.item(0)], [y_pos.item(0)], [x_dot_0], [y_dot_0]])
     
     P_current = eye4
+    #Try this for later tuning
     R = np.matrix([[6.25, 0, 0, 0], [0, 6.25, 0, 0], [0,0,100,0], [0,0,0,100]])
     C = eye4
  
