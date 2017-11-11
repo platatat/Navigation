@@ -89,7 +89,7 @@ def parse_json(presets=False):
 
 
 	if (not presets):
-		url = urllib.urlopen("https://cubike.herokuapp.com/getwaypoints") #NEW
+		url = urllib.request.urlopen("https://cubike.herokuapp.com/getwaypoints") #NEW
 		string = url.read()
 
 		#Make into dictionary
