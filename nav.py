@@ -132,7 +132,7 @@ class Nav(object):
 
 		bike = self.map_model.bike
 		bike_pos = (bike.xB, bike.yB)
-
+		print('Bike x:  {} Bike y: {}'.format(bike.xB, bike.yB))
 		# Determine the path segment closest to the bike
 		self.closest_path_index = self.find_closest_path(bike_pos)
 		path = self.map_model.paths[self.closest_path_index]
