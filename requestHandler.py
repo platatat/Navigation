@@ -6,6 +6,7 @@ import json
 import urllib
 import math
 import numpy as np
+import sys
 from itertools import groupby
 
 def convert(latitude, longitude):
@@ -89,7 +90,14 @@ def parse_json(presets=False):
 
 
 	if (not presets):
-		url = urllib.request.urlopen("https://cubike.herokuapp.com/getwaypoints") #NEW
+		
+		if sys.version_info[0] < 3:
+			url = urllib.urlopen("https://cubike.herokuapp.com/getwaypoints")
+			
+		#using python 3
+		else:
+			url = urllib.request.urlopen("https://cubike.herokuapp.com/getwaypoints") #NEW
+			
 		string = url.read()
 
 		#Make into dictionary
