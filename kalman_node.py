@@ -46,7 +46,7 @@ class Kalman(object):
         yaw = data.data[9]
         #velocity = data.data[6]
         
-        #self.yaw = [yaw]
+        self.yaw = [yaw]
         
         #uncomment if getting velocity from bike_state (hall sensor)
         #self.velocity = [velocity]
@@ -66,7 +66,7 @@ class Kalman(object):
         #Important fields from data
         latitude = data.data[0] # In degrees
         longitude = data.data[1]
-        yaw = data.data[7]
+    
         velocity = data.data[8]
         
         # uncomment if getting velocity from gps
@@ -79,8 +79,9 @@ class Kalman(object):
         x, y = requestHandler.math_convert(float(latitude), float(longitude))
         #Converts lat long to x,y using RELATIVE origin
         #x, y = requestHandler.math_convert_relative(float(latitude), float(longitude), float(initial_lat), float(initial_long))
-
-
+        
+        self.gps_xy = [x,y]
+        
     def main_loop(self):
 
         rate = rospy.Rate(100)
