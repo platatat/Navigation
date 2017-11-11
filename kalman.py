@@ -109,7 +109,7 @@ def kalman_real_time(raw_state, s_current, P_current):
     R = 4*eye4
  
     s_new = A*s_current
-    P_new = A*P_current*A.T + eye4
+    P_new = A*P_current*A.T + (np.matrix([[.0001, 0, 0 ,0], [0, .0001, 0, 0], [0,0,.0001,0], [0,0,0,.0001]]))
     
     #Check for outliers
     old_xy = (s_current.item(0), s_current.item(1))
