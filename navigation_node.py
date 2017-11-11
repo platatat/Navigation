@@ -110,6 +110,7 @@ def talker():
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         new_map = new_nav.map_model
+        print("Map_model bike x y: {}, {}".format(new_nav.map_model.bike.xB, new_nav.map_model.bike.yB))
         #rospy.loginfo((new_bike.xB, new_bike.yB, new_bike.psi, new_nav.direction_to_turn()))
         pub.publish(new_nav.get_steering_angle())
         rate.sleep()
