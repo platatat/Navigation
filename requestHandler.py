@@ -125,8 +125,8 @@ def parse_json(presets=False):
 
 
 
-
-# parse_json()
+if __name__ == '__main__':
+	print parse_json(False)
 
 #Gets latitude of first point
 # print legs[0]["points"][0]['lat']
