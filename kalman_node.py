@@ -73,7 +73,7 @@ class Kalman(object):
         self.velocity = [data.data[8]]
         
         # uncomment if getting yaw from gps
-        self.yaw = [data.data[7]]
+        self.yaw = [np.deg2rad(data.data[7])]
         
         self.time_step = [data.data[10]]
         

@@ -53,7 +53,7 @@ def update_gps(data):
     """Updates the bike object with data from gps"""
     
     #Uncomment for yaw from the GPS
-    new_bike.psi = data.data[7] #yaw/heading (GPS)
+    new_bike.psi = np.deg2rad(data.data[7]) #yaw/heading (GPS)
     
     #Uncomment for velocity from the GPS
     new_bike.v = data.data[8] #velocity (GPS)
