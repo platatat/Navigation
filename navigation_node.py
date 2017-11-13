@@ -33,7 +33,9 @@ def update_bike_state(data):
     new_bike.phi = d[5] #lean angle/roll (IMU)
     new_bike.delta = d[2] #steer angle (encoder)
     new_bike.w_r = d[4] #lean rate (IMU)
-    new_bike.psi = d[9] #heading/yaw (IMU)
+    
+    #Uncomment for yaw from bike_state (IMU)
+    #new_bike.psi = d[9] #heading/yaw (IMU)
     
     #Uncomment for velocity from bike_state (hall sensors)
     #new_bike.v = d[6] # velocity (hall sensors)
@@ -50,7 +52,8 @@ def update_xy(data):
 def update_gps(data):
     """Updates the bike object with data from gps"""
     
-    #Comment for velocity from the GPS
+    #Uncomment for yaw from the GPS
+    new_bike.psi = data.data[7] #yaw/heading (GPS)
     
     #Uncomment for velocity from the GPS
     new_bike.v = data.data[8] #velocity (GPS)
