@@ -15,6 +15,9 @@ from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import MultiArrayLayout
 from std_msgs.msg import MultiArrayDimension
+import matplotlib
+#matplotlib.use('Agg')
+matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 
 class Plotter(object):
@@ -50,15 +53,16 @@ class Plotter(object):
         velocity = data.data[8]
 
         # Converts lat long to x,y using FIXED origin
-        #x, y = requestHandler.math_convert(float(latitude), float(longitude))
+        x, y = requestHandler.math_convert(float(latitude), float(longitude))
         #Converts lat long to x,y using RELATIVE origin
-        x, y = requestHandler.math_convert_relative(float(latitude), float(longitude), float(initial_lat), float(initial_long))
+        #x, y = requestHandler.math_convert_relative(float(latitude), float(longitude), float(initial_lat), float(initial_long))
         plt.scatter(x,y, c='r')
         plt.draw()
         plt.pause(0.00000000001)
 
 
 if __name__ == '__main__':
+    #plot the waypoints in here 
     plt.ion()
     plt.show()
-    rospy.spin()
+    #rospy.spin()
