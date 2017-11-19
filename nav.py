@@ -13,7 +13,7 @@ from constants import *
 
 # DEBUGGING PRINT STATEMENTS
 DEBUG_PRINT_CONTRIBS = False
-
+count = 0
 class Nav(object):
 
 
@@ -129,6 +129,7 @@ class Nav(object):
 		store the last errors in distance and angle,
 		respectively.
 		"""
+		global count 
 
 		bike = self.map_model.bike
 		bike_pos = (bike.xB, bike.yB)
@@ -165,6 +166,7 @@ class Nav(object):
 
 		# Get angle between bike and path
 		angle_diff = corrected_bike_psi - path_angle
+		
 
 		while abs(angle_diff) > math.pi:
 			angle_diff -= math.copysign(2 * math.pi, angle_diff)
@@ -217,7 +219,9 @@ class Nav(object):
 		# Store current errors in state variables
 		self.last_dist_error = signed_dist
 		self.last_ang_error = angle_diff
-
+		if count % 50 == 0:
+			print("Distance from path: {}".format(signed_dist))
+		count = count + 1
 		return self.clamp_steer_angle(steerD)
 
 	def create_lookahead_correction(self, current_path, bike):
