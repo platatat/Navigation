@@ -23,40 +23,25 @@ from matplotlib import pyplot as plt
 
 import kalman
 import requestHandler
+from sensor_data import SensorData
 
-def gps_only_retro(gps_file):
-  
-  gps_data = []
-  with open(gps_file) as gps_file:
-      gps_reader = csv.reader(gps_file, delimiter=",")
-      header_row = True
-      for row in gps_reader:
-          if header_row:
-  
-              # Skip the first row, which contains the headers
-              header_row = False
-              continue
-  
-          # field0 is lat, field1 is long, field7 is yaw in degrees,
-          # field8 is speed from the gps (meters per second)
-          # field10 is timestep (miliseconds)
-          x, y = requestHandler.math_convert(float(row[2]), float(row[3]))
-          gps_data.append([x, y, float(row[9])*np.pi/180, float(row[10]), float(row[12])])
-        
-  # The Kalman filter wants the GPS data in matrix form
-  gps_matrix = np.matrix(gps_data)
-  
-  # Plot the GPS data
-  plt.scatter([gps_matrix[:,0]], [gps_matrix[:,1]], c='r', edgecolors="none")
-  
-  # Run the Kalman filter
-  output_matrix = kalman.kalman_retro(gps_matrix)
-  
-  # Plot the Kalman output
-  plt.scatter([output_matrix[:,0]], [output_matrix[:,1]], edgecolors="none")
-  
-  # Show everything
-  plt.show()
+
+def gps_only_retro(gps_filename):
+    # Load data from csv file.
+    sensors = SensorData(gps_filename=gps_filename)
+
+    # Plot the GPS data
+    plt.scatter(sensors.gps.x, sensors.gps.y, c='r', edgecolors="none")
+
+    # Run the Kalman filter
+    output_matrix = kalman.kalman(sensors)
+
+    # # Plot the Kalman output
+    plt.scatter([output_matrix[:,0]], [output_matrix[:,1]], edgecolors="none")
+
+    # Show everything
+    plt.show()
+
 
 def gps_imu_retro(gps_file, bike_state_file):
   
@@ -187,7 +172,7 @@ def real_time(gps_file, kalman_file):
   plt.show()
   
 if __name__ == '__main__':
-  GPS_FILE = "/Users/joshua/Desktop/gps_2017-11-07~~07-27-22-PM.csv"
+  GPS_FILE = "data/gps_data.csv"
   #BIKE_STATE = "/Users/joshua/Desktop/kalman_pub_2017-11-07~~07-27-22-PM.csv"
   KALMAN_FILE = "/Users/joshua/Desktop/kalman_pub_2017-11-07~~07-27-22-PM.csv"
   

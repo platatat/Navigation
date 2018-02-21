@@ -7,6 +7,76 @@ https://home.wlu.edu/~levys/kalman_tutorial/
 import numpy as np
 import geometry
 
+
+def kalman(sensors, dt=10e6):
+    # Get start and end time.
+    start_time = sensors.gps.timestamp[0]
+    end_time = sensors.gps.timestamp[-1]
+
+    # Keep track of index into sensor arrays so it's easier to know when the simulation time
+    # passes though a sensor data point timestamp.
+    gps_index = 0
+
+    # Get initial state. State vector is (x, y, x_dot, y_dot).
+    x_init = sensors.gps.x[0]
+    y_init = sensors.gps.y[0]
+    xdot_init = sensors.gps.speed[0] * np.cos(sensors.gps.yaw[0])
+    ydot_init = sensors.gps.speed[0] * np.sin(sensors.gps.yaw[0])
+    state = np.matrix([[x_init], [y_init], [xdot_init], [ydot_init]])
+
+    # State estimate covariance matrix.
+    P = np.identity(4)
+
+    # Sensor covariance matrix.
+    R = np.matrix([[6.25, 0, 0, 0], [0, 6.25, 0, 0], [0,0,100,0], [0,0,0,100]])
+
+    # TODO: not sure what this one does...
+    C = np.identity(4)
+
+    kalman_state = []
+
+    # Run the filter.
+    for t in np.arange(start_time, end_time, dt):
+        # State update matrix.
+        A = np.identity(4)
+        A[0, 2] = dt / 1.e9
+        A[1, 3] = dt / 1.e9
+
+        # Predict new state.
+        # TODO: why do we need to add the identity here?
+        state = A * state
+        P = A * P * A.T + np.identity(4) * (dt / 1.e9)
+
+        # Check for sensor data during this timestep.
+        if sensors.gps.timestamp[gps_index] < t:
+            gps_index += 1
+
+            # Update state using sensor observations.
+            x_observed = sensors.gps.x[gps_index]
+            y_observed = sensors.gps.y[gps_index]
+            yaw_observed = sensors.gps.yaw[gps_index]
+            speed_observed = sensors.gps.speed[gps_index]
+            xdot_observed = speed_observed * np.cos(yaw_observed)
+            ydot_observed = speed_observed * np.sin(yaw_observed)
+
+            z = np.matrix([[x_observed], [y_observed], [xdot_observed], [ydot_observed]])
+
+            # Compute kalman gain.
+            G = P * C.T * (C * P * C.T + R).I
+            state += G * (z - C * state)
+            P = (np.identity(4) - G * C) * P
+
+            # Catch up to most recent sensor measurement.
+            while sensors.gps.timestamp[gps_index] < t:
+                gps_index += 1
+                print 'Skipping sensor data, timestep might be too small.'
+
+        kalman_state.append(state)
+
+    return np.array(kalman_state)
+
+
+
 def kalman_retro(raw_state):
     """Kalman filter that is used to retroactively filter previously collected
     raw data. Input raw_state is a 5x1 matrix of raw x, y, yaw, velocity, and time step data.
